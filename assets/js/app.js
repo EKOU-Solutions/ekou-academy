@@ -97,7 +97,11 @@
 
   function updateProgressPill() {
     const total = CURSO.ordered().length;
-    document.getElementById('progressPill').textContent = `${Progress.countDone()} / ${total}`;
+    const done = Progress.countDone();
+    const pill = document.getElementById('progressPill');
+    pill.textContent = `${done} / ${total}`;
+    // alimenta el anillo cónico de la marca (--grad-progreso)
+    pill.style.setProperty('--progress', total ? (done / total * 100).toFixed(1) + '%' : '0%');
   }
 
   document.getElementById('lessonSearch').addEventListener('input', e => buildSidebar(e.target.value));
