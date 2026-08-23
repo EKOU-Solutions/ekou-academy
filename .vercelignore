@@ -1,0 +1,6 @@
+# Nada de esto lo sirve el sitio
+node_modules/
+tools/
+data/raw/
+.claude/
+README.md
