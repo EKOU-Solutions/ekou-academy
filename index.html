@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SQL Total — Curso interactivo de SQL con Playground</title>
+<meta name="description" content="Curso interactivo de SQL en español: consultas, JOINs, agregados, DML, DDL, vistas, índices, transacciones, CTEs, funciones de ventana, triggers, procedimientos almacenados y funciones. Incluye un playground SQL en el navegador.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+<link rel="stylesheet" href="assets/vendor/codemirror.css">
+<link rel="stylesheet" href="assets/vendor/cm-show-hint.css">
+<link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <button class="icon-btn nav-toggle" id="navToggle" aria-label="Abrir menú">☰</button>
+  <a class="brand" href="#/">
+    <span class="brand-mark">⚡</span>
+    <span class="brand-text">SQL<b>Total</b></span>
+  </a>
+  <nav class="topnav">
+    <a href="#/" data-nav="curso">Curso</a>
+    <a href="#/referencia" data-nav="referencia">Referencia</a>
+    <a href="#/playground" data-nav="playground" class="cta">Playground</a>
+  </nav>
+  <div class="topbar-right">
+    <span class="progress-pill" id="progressPill" title="Lecciones completadas">0 / 0</span>
+    <button class="icon-btn" id="themeToggle" aria-label="Cambiar tema">◐</button>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-search">
+      <input type="search" id="lessonSearch" placeholder="Buscar tema… (/)" autocomplete="off">
+    </div>
+    <div id="sidebarNav"></div>
+    <div class="sidebar-foot">
+      <button class="linkish" id="resetProgress">Reiniciar progreso</button>
+    </div>
+  </aside>
+  <div class="sidebar-scrim" id="sidebarScrim"></div>
+
+  <main class="main" id="main">
+    <div class="loading-splash" id="splash">
+      <div class="spinner"></div>
+      <p>Cargando motor SQLite…</p>
+    </div>
+  </main>
+</div>
+
+<script src="assets/vendor/sql-wasm.js"></script>
+<script src="assets/vendor/codemirror.js"></script>
+<script src="assets/vendor/codemirror-sql.js"></script>
+<script src="assets/vendor/cm-show-hint.js"></script>
+<script src="assets/vendor/cm-sql-hint.js"></script>
+<script src="assets/vendor/cm-matchbrackets.js"></script>
+<script src="assets/vendor/cm-placeholder.js"></script>
+
+<script src="data/datasets.js"></script>
+<script src="assets/js/registry.js"></script>
+
+<script src="data/lessons/00-intro.js"></script>
+<script src="data/lessons/01-select.js"></script>
+<script src="data/lessons/02-constraints.js"></script>
+<script src="data/lessons/03-constraints-2.js"></script>
+<script src="data/lessons/04-filtering-sorting.js"></script>
+<script src="data/lessons/05-review.js"></script>
+<script src="data/lessons/06-joins.js"></script>
+<script src="data/lessons/07-outer-joins.js"></script>
+<script src="data/lessons/08-nulls.js"></script>
+<script src="data/lessons/09-expressions.js"></script>
+<script src="data/lessons/10-aggregates.js"></script>
+<script src="data/lessons/11-aggregates-2.js"></script>
+<script src="data/lessons/12-order-of-execution.js"></script>
+<script src="data/lessons/13-insert.js"></script>
+<script src="data/lessons/14-update.js"></script>
+<script src="data/lessons/15-delete.js"></script>
+<script src="data/lessons/16-create-table.js"></script>
+<script src="data/lessons/17-alter-table.js"></script>
+<script src="data/lessons/18-drop-table.js"></script>
+<script src="data/lessons/19-end.js"></script>
+
+<script src="data/lessons/20-subqueries.js"></script>
+<script src="data/lessons/21-set-operations.js"></script>
+<script src="data/lessons/22-case.js"></script>
+<script src="data/lessons/26-cte.js"></script>
+<script src="data/lessons/23-functions-scalar.js"></script>
+<script src="data/lessons/24-functions-dates.js"></script>
+<script src="data/lessons/25-window-functions.js"></script>
+<script src="data/lessons/27-views.js"></script>
+<script src="data/lessons/28-indexes.js"></script>
+<script src="data/lessons/29-constraints-keys.js"></script>
+<script src="data/lessons/30-transactions.js"></script>
+<script src="data/lessons/31-triggers.js"></script>
+<script src="data/lessons/32-stored-procedures.js"></script>
+<script src="data/lessons/33-user-functions.js"></script>
+<script src="data/lessons/34-cursors-errors.js"></script>
+<script src="data/lessons/36-normalization.js"></script>
+<script src="data/lessons/37-performance.js"></script>
+<script src="data/lessons/35-security-users.js"></script>
+<script src="data/lessons/38-reference.js"></script>
+
+<script src="assets/js/engine.js"></script>
+<script src="assets/js/checker.js"></script>
+<script src="assets/js/ui.js"></script>
+<script src="assets/js/exercise.js"></script>
+<script src="assets/js/playground.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+<meta charset="utf-8">
+<meta http-equiv="x-ua-compatible" content="IE=Edge"/> 
+<meta name="application-name" content="SQLBolt - Learn SQL with simple, interactive exercises."/>
+<meta name="application-url" content="https://sqlbolt.com"/>
+<meta name="created" content="2015-04-01"/>
+<meta name="description" content="SQLBolt provides a set of interactive lessons and exercises to help you learn SQL"/>
+<meta name="keywords" content="sql,mysql,sqlite,postgres,javascript,learn,tutorial,interactive,lessons,"/>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link type="image/png" href="/cs/images/favicon.png" rel="icon">
+<title>SQLBolt - Learn SQL - SQL Lesson 6: Multi-table queries with JOINs</title>
+
+<!-- PREFETCH -->
+<link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
+<link rel="dns-prefetch" href="//fonts.googleapis.com">
+<link rel="dns-prefetch" href="//www.google-analytics.com">
+<link rel="dns-prefetch" href="//pagead2.googlesyndication.com">
+<link rel="dns-prefetch" href="//www.paypal.com">
+<link rel="dns-prefetch" href="//www.paypalobjects.com">
+<link rel="dns-prefetch" href="//connect.facebook.net">
+<link rel="dns-prefetch" href="//platform.twitter.com">
+<link rel="prefetch" href="/cs/js/sql_3.8.7.4.js">
+
+<!-- CSS -->
+<link type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+<link type="text/css" href="https://fonts.googleapis.com/css?family=Ruda:400,700" rel="stylesheet">
+<link type="text/css" href="/cs/css/main.min.css?version=68" rel="stylesheet">
+<style type="text/css">
+</style>
+</head>
+
+<!-- BODY -->
+<body class="">
+
+
+<div class="container">
+    <div class="row content">
+        <!-- NAV -->
+        <div class="header">
+            <a href="/" class="site_logo" title="Home">
+                <img src="/cs/images/favicon.png" alt="SQLBolt icon" />
+            </a>
+            <a href="/" class="site_name" title="Home">
+                <span>SQL<span class="highlight">Bolt</span></span><br/>
+                <span class="desc hide-max-md">Learn SQL with simple, interactive exercises.</span>
+            </a>
+            <div class="menu_buttons">
+                <a href="/lesson/introduction" class="menu_button lesson_button " title="Lessons menu">
+                    <img src="/cs/images/icon_tutorial.png" alt="Interactive Tutorial" /> <span class="hide-max-sm">Interactive</span> <span class="hide-max-xs">Tutorial</span>
+                </a>
+                <a href="/topic/introduction" class="menu_button topics_button " title="References &amp; More menu">
+                    <img src="/cs/images/icon_reference.png" alt="References &amp; More" /> <span class="hide-max-xs">More Topics</span></span>
+                </a>
+            </div>
+        </div>
+    
+        <!-- MENU -->
+        <div class="menu_container">
+            <div class="lesson_menu menu">
+                <div class="title">All Lessons</div>
+                    <a href="/lesson/introduction" class="" title="Introduction to SQL">Introduction to SQL</a>
+                    <a href="/lesson/select_queries_introduction" class="" title="SQL Lesson 1: SELECT queries 101">SQL Lesson 1: SELECT queries 101</a>
+                    <a href="/lesson/select_queries_with_constraints" class="" title="SQL Lesson 2: Queries with constraints (Pt. 1)">SQL Lesson 2: Queries with constraints (Pt. 1)</a>
+                    <a href="/lesson/select_queries_with_constraints_pt_2" class="" title="SQL Lesson 3: Queries with constraints (Pt. 2)">SQL Lesson 3: Queries with constraints (Pt. 2)</a>
+                    <a href="/lesson/filtering_sorting_query_results" class="" title="SQL Lesson 4: Filtering and sorting Query results">SQL Lesson 4: Filtering and sorting Query results</a>
+                    <a href="/lesson/select_queries_review" class="" title="SQL Review: Simple SELECT Queries">SQL Review: Simple SELECT Queries</a>
+                    <a href="/lesson/select_queries_with_joins" class="active" title="SQL Lesson 6: Multi-table queries with JOINs">SQL Lesson 6: Multi-table queries with JOINs</a>
+                    <a href="/lesson/select_queries_with_outer_joins" class="" title="SQL Lesson 7: OUTER JOINs">SQL Lesson 7: OUTER JOINs</a>
+                    <a href="/lesson/select_queries_with_nulls" class="" title="SQL Lesson 8: A short note on NULLs">SQL Lesson 8: A short note on NULLs</a>
+                    <a href="/lesson/select_queries_with_expressions" class="" title="SQL Lesson 9: Queries with expressions">SQL Lesson 9: Queries with expressions</a>
+                    <a href="/lesson/select_queries_with_aggregates" class="" title="SQL Lesson 10: Queries with aggregates (Pt. 1)">SQL Lesson 10: Queries with aggregates (Pt. 1)</a>
+                    <a href="/lesson/select_queries_with_aggregates_pt_2" class="" title="SQL Lesson 11: Queries with aggregates (Pt. 2)">SQL Lesson 11: Queries with aggregates (Pt. 2)</a>
+                    <a href="/lesson/select_queries_order_of_execution" class="" title="SQL Lesson 12: Order of execution of a Query">SQL Lesson 12: Order of execution of a Query</a>
+                    <a href="/lesson/inserting_rows" class="" title="SQL Lesson 13: Inserting rows">SQL Lesson 13: Inserting rows</a>
+                    <a href="/lesson/updating_rows" class="" title="SQL Lesson 14: Updating rows">SQL Lesson 14: Updating rows</a>
+                    <a href="/lesson/deleting_rows" class="" title="SQL Lesson 15: Deleting rows">SQL Lesson 15: Deleting rows</a>
+                    <a href="/lesson/creating_tables" class="" title="SQL Lesson 16: Creating tables">SQL Lesson 16: Creating tables</a>
+                    <a href="/lesson/altering_tables" class="" title="SQL Lesson 17: Altering tables">SQL Lesson 17: Altering tables</a>
+                    <a href="/lesson/dropping_tables" class="" title="SQL Lesson 18: Dropping tables">SQL Lesson 18: Dropping tables</a>
+                    <a href="/lesson/end" class="" title="SQL Lesson X: To infinity and beyond!">SQL Lesson X: To infinity and beyond!</a>
+            </div>
+            <div class="practice_menu menu">
+                <div class="title">Additional Topics</div>
+                    <a href="/topic/introduction" class="" title="Intermediate SQL Topics">Intermediate SQL Topics</a>
+                    <a href="/topic/subqueries" class="" title="SQL Topic: Subqueries">SQL Topic: Subqueries</a>
+                    <a href="/topic/set_operations" class="" title="SQL Topic: Unions, Intersections & Exceptions">SQL Topic: Unions, Intersections & Exceptions</a>
+            </div>
+        </div>
+
+        <!-- LESSON -->
+<div class="row">
+    <div class="col-xs-12 col-sm-12 col-md-9">
+        <!-- LESSON TITLE & BODY -->
+        <div class="lesson">
+            <div class="title">
+                SQL Lesson 6: Multi-table queries with JOINs
+            </div>
+            <div class="body">
+                <p>Up to now, we've been working with a single table, but entity data in the real world is often broken
+down into pieces and stored across multiple orthogonal tables using a process known as <i>normalization</i><sup><a href="http://en.wikipedia.org/wiki/Database_normalization" title="Database normalization">[1]</a></sup>. </p>
+<h1>Database normalization</h1>
+<p>Database normalization is useful because it minimizes duplicate data in any single table, and allows 
+for data in the database to grow independently of each other (ie. Types of car engines can grow 
+independent of each type of car).  As a trade-off, queries get slightly more complex since they have
+to be able to find data from different parts of the database, and performance issues can arise when 
+working with many large tables.</p>
+<p>In order to answer questions about an entity that has data spanning multiple tables in a normalized 
+database, we need to learn how to write a query that can combine all that data and pull out exactly 
+the information we need.</p>
+<h1>Multi-table queries with JOINs</h1>
+<p>Tables that share information about a single entity need to have a <i>primary key</i> that identifies 
+that entity <i>uniquely</i> across the database.  One common primary key type is an auto-incrementing 
+integer (because they are space efficient), but it can also be a string, hashed value, so long as it
+is unique.</p>
+<p>Using the <code>JOIN</code> clause in a query, we can combine row data across two separate tables using this 
+unique key.  The first of the joins that we will introduce is the <code>INNER JOIN</code>.</p>
+<div class="definition">
+    <div class="desc">Select query with INNER JOIN on multiple tables</div>
+    <code class="sql">SELECT column, another_table_column, &hellip;
+FROM mytable
+<strong>INNER JOIN another_table 
+    ON mytable.id = another_table.id</strong>
+WHERE <i>condition(s)</i>
+ORDER BY column, &hellip; ASC/DESC
+LIMIT num_limit OFFSET num_offset;</code>
+</div>
+
+<p>The <code>INNER JOIN</code> is a process that matches rows from the first table and the second table which have 
+the same key (as defined by the <code>ON</code> constraint) to create a result row with the combined columns
+from both tables.  After the tables are joined, the other clauses we learned previously are then 
+applied.</p>
+<div class="dyk">
+    <div class="desc">Did you know?</div>
+    <p>
+    You might see queries where the <code>INNER JOIN</code> is written simply as a <code>JOIN</code>.  
+    These two are equivalent, but we will continue to refer to these joins as inner-joins because they 
+    make the query easier to read once you start using other types of joins, which will be introduced 
+    in the following lesson.
+    </p>
+</div>
+
+<h1>Exercise</h1>
+<p>We've added a new table to the Pixar database so that you can try practicing some joins. The <strong>BoxOffice</strong> 
+table stores information about the ratings and sales of each particular Pixar movie, and the <em>Movie_id</em> 
+column in that table corresponds with the <em>Id</em> column in the <strong>Movies</strong> table 1-to-1.  Try and solve
+the tasks below using the <code>INNER JOIN</code> introduced above.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xs-12">
+        <!-- EXERCISE -->
+        <div class="disabled_exercise_overlay">
+    Sorry but the SQLBolt exercises require a more recent browser to run.<br/>Please upgrade to the latest version of <a href="http://windows.microsoft.com/en-us/internet-explorer/download-ie" title="Download Internet Explorer">Internet Explorer</a>, <a href="https://www.google.com/chrome/browser/desktop/index.html" title="Download Chrome">Chrome</a>, or <a href="https://www.mozilla.org/en-US/firefox/new/" title="Download Firefox">Firefox</a>!
+    <br/><br/>
+    <span>Otherwise, continue to the next lesson: <a href="/lesson/select_queries_with_outer_joins">SQL Lesson 7: OUTER JOINs</a></span>
+</div>
+<div class="exercise" exerciseId="ex6">
+    <div class="body row">
+        <div class="side_by_side_container col-xs-12">
+            <div class="datatable_container col-xs-6">
+                <div class="datatable_title">Table: movies (Read-only)</div>
+                 <div class="datatable read_only" datatableId="movies"><div class="loading_message">Loading SQL...</div></div>
+            </div>
+            <div class="datatable_container col-xs-6">
+                <div class="datatable_title">Table: boxoffice (Read-only)</div>
+                 <div class="datatable read_only" datatableId="boxoffice"><div class="loading_message">Loading SQL...</div></div>
+            </div>
+        </div><!-- side_by_side_container -->
+            <div style="margin-top: 1em;" class="datatable_title col-xs-6">
+                Query results
+            </div>
+        <div class="table_and_input two_up col-xs-12 col-sm-8 col-md-8">
+            <div class="message"></div>
+            <div class="datatable" datatableId="_result"><div class="loading_message">Loading SQL...</div></div>
+            <div class="sqlinput_container">
+                <a href="#" class="clear">RESET</a>
+                <div class="sqlinput" targetDatatableId="_result" style="font-size: 1em;"></div>
+            </div>
+        </div><!-- /table_and_input -->
+        <div class="tasks_and_continue two_up col-xs-12 col-sm-4 col-md-4">
+            <div class="tasks_title">
+                Exercise 6 &mdash; <span class="title">Tasks</span>
+            </div>
+            <ol class="tasks_list">
+                <li>
+                    Find the domestic and international sales for each movie
+                </li>
+                <li>
+                    Show the sales numbers for each movie that did better internationally rather than domestically
+                </li>
+                <li>
+                    List all the movies by their ratings in descending order
+                </li>
+            </ol>
+            <div class="solve_hint">
+                Stuck? Read this task's <a href="#" class="solution_trigger">Solution</a>.<br/>
+                Solve all tasks to continue to the next lesson.
+            </div>
+            <a href="/lesson/select_queries_with_outer_joins" class="continue disabled">
+                Finish above Tasks
+            </a>
+        </div><!-- /tasks_and_continue -->
+    </div><!-- /body -->
+</div><!-- /exercise -->
+
+
+            <!-- FOOTER -->
+            <div class="footer col-xs-12 col-md-6">
+                Next &ndash; <a href="/lesson/select_queries_with_outer_joins" title="SQL Lesson 7: OUTER JOINs">SQL Lesson 7: OUTER JOINs</a><br/>
+                Previous &ndash; <a href="/lesson/select_queries_review" title="SQL Review: Simple SELECT Queries">SQL Review: Simple SELECT Queries</a>
+            </div>
+            <div class="footer ralign col-xs-12 col-md-6">
+                Find SQLBolt useful? Please consider <br/>
+                <a class="paypal_donation_button" href="#" title="Paypal donation">Donating ($4) via Paypal</a> to support our site.
+            </div>
+    </div>
+</div>
+
+    </div>
+</div>
+
+<!-- GA -->
+<div class="row">
+<div class="col-xs-12 col-sm-8 col-sm-offset-2">
+<div class="ga">
+    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-4789820854456926"
+         data-ad-slot="9785164698"
+         data-ad-format="auto"></ins>
+</div>
+</div>
+</div>
+
+<!-- CR -->
+<div class="copyright container">
+    <div class="fb-like" data-href="http://sqlbolt.com" data-layout="button_count" data-action="like" data-show-faces="true" data-share="true"></div>
+    <div class="twitter-like" style="display: inline; position: relative; top: -3px;">
+        <a href="https://twitter.com/share" class="twitter-share-button" data-text="SQLBolt - Learn SQL with simple, interactive exercises." data-url="http://sqlbolt.com" data-via="SQLBolt"></a>
+    </div>
+    <div class="text">2024 &copy; SQLBolt<br/>
+        <a href="mailto:sqlbolt@gmail.com" title="SQLBolt Email">Email</a> |
+        <a href="http://twitter.com/sqlbolt" title="SQLBolt Twitter">Twitter</a>
+    </div>
+    <div class="text">Additional Courses<br/>
+        <a href="https://regexone.com" title="RegexOne">Interactive Regular Expressions Lessons</a>
+    </div>
+</div>
+
+<!-- PP -->
+<div class="paypal" style="visibility: hidden">
+<form id="paypal_form" action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="mosannona@gmail.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="item_name" value="SQLBolt Donation">
+<input type="hidden" name="amount" value="4.00">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_SM.gif:NonHostedGuest">
+<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" style="border: 0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+<img alt="" style="border: 0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+</form>
+</div>
+
+<!-- JS -->
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.5/highlight.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+<script type="text/javascript" src="/cs/js/main.min.js?version=68"></script>
+<script type="text/javascript" src="/cs/js/sql_3.8.7.4.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ace.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/mode-sql.js"></script>
+<script type="text/javascript" src="/cs/js/pixar.js?version=68"></script>
+
+<!--[if lte IE 9]>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.2/html5shiv.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/respond.js/1.4.2/respond.min.js"></script>
+<script type="text/javascript">
+    var disableExercises = true; // :(
+</script>
+<![endif]-->
+
+<!-- GA -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-N78FPMW1QB"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-N78FPMW1QB');
+</script>
+
+<script type="text/javascript">
+	"use strict";
+
+    // Setup the exercises
+    var exerciseJson = "{\"tasks_title\": \"Exercise 6\", \"database\": \"pixar.js\", \"is_two_up\": true, \"targetDatatableId\": \"_result\", \"inputDefaultQuery\": \"SELECT * FROM movies;\", \"inputDefaultQuerySelection\": [20, 20], \"datatable\": {\"_tables\": [\"movies\", \"boxoffice\"], \"_result\": {\"defaultQuery\": \"SELECT * FROM movies;\"}, \"movies\": {\"defaultQuery\": \"SELECT * FROM movies;\"}, \"boxoffice\": {\"defaultQuery\": \"SELECT * FROM boxoffice;\"}}, \"tasks\": [{\"text\": \"Find the domestic and international sales for each movie\", \"solution\": \"SELECT title, domestic_sales, international_sales \\nFROM movies\\n  JOIN boxoffice\\n    ON movies.id = boxoffice.movie_id;\", \"checks\": [{\"type\": \"row_col_val_solution_query\", \"data\": null}]}, {\"text\": \"Show the sales numbers for each movie that did better internationally rather than domestically\", \"solution\": \"SELECT title, domestic_sales, international_sales\\nFROM movies\\n  JOIN boxoffice\\n    ON movies.id = boxoffice.movie_id\\nWHERE international_sales > domestic_sales;\", \"checks\": [{\"type\": \"row_col_val_solution_query\", \"data\": null}, {\"type\": \"row_col_val_greather_than_or_equal\", \"data\": {\"column_a\": \"international_sales\", \"column_b\": \"domestic_sales\"}}]}, {\"text\": \"List all the movies by their ratings in descending order\", \"userSolution\": \"SELECT title, rating\\nFROM movies\\n  JOIN boxoffice\\n    ON movies.id = boxoffice.movie_id\\nORDER BY rating DESC;\", \"solution\": \"SELECT title\\nFROM movies\\n  JOIN boxoffice\\n    ON movies.id = boxoffice.movie_id\\nORDER BY rating DESC;\", \"checks\": [{\"type\": \"row_col_val_solution_query_ordered\", \"data\": null}]}]}";
+
+    initializeDocumentLoad(exerciseJson, "lesson/6");
+    exerciseJson = null;
+</script>
+
+<!-- GA -->
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+
+<!-- FB -->
+<div id="fb-root"></div>
+<script>
+function showFacebookButton() {
+    (function(d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) return;
+        js = d.createElement(s); js.id = id;
+        js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.3&appId=221509137874176";
+        fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+}
+setTimeout(showFacebookButton, 1000);
+</script>
+
+<!-- TWITTER -->
+<script>
+function showTwitterButton() {
+    !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');
+}
+setTimeout(showTwitterButton, 500);
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,1226 @@
+{
+ "lesson:altering_tables": {
+  "slug": "altering_tables",
+  "kind": "lesson",
+  "title": "SQL Lesson 17: Altering tables",
+  "body": "<p>As your data changes over time, SQL provides a way for you to update your corresponding tables and \ndatabase schemas by using the <code>ALTER TABLE</code> statement to add, remove, or modify columns and table\nconstraints.</p>\n<h1>Adding columns</h1>\n<p>The syntax for adding a new column is similar to the syntax when creating new rows in the <code>CREATE TABLE</code>\nstatement.  You need to specify the data type of the column along with any potential table constraints \nand default values to be applied to both existing <i>and</i> new rows.  In some databases like MySQL, \nyou can even specify where to insert the new column using the <code>FIRST</code> or <code>AFTER</code> clauses, though this \nis not a standard feature.</p>\n<div class=\"definition\">\n    <div class=\"desc\">Altering table to add new column(s)</div>\n    <code class=\"sql\">ALTER TABLE mytable\nADD column <i>DataType</i> <i>OptionalTableConstraint</i> \n    DEFAULT default_value;</code>\n</div>\n\n<h1>Removing columns</h1>\n<p>Dropping columns is as easy as specifying the column to drop, however, some databases (including SQLite) \ndon't support this feature.  Instead you may have to create a new table and migrate the data over.</p>\n<div class=\"definition\">\n    <div class=\"desc\">Altering table to remove column(s)</div>\n    <code class=\"sql\">ALTER TABLE mytable\nDROP column_to_be_deleted;</code>\n</div>\n\n<h1>Renaming the table</h1>\n<p>If you need to rename the table itself, you can also do that using the <code>RENAME TO</code> clause of the statement.</p>\n<div class=\"definition\">\n    <div class=\"desc\">Altering table name</div>\n    <code class=\"sql\">ALTER TABLE mytable\nRENAME TO new_table_name;</code>\n</div>\n\n<h1>Other changes</h1>\n<p>Each database implementation supports different methods of altering their tables, so it's always best to \nconsult your database docs before proceeding: \n<a href=\"https://dev.mysql.com/doc/refman/5.6/en/alter-table.html\" title=\"MySQL Alter Table\">MySQL</a>,\n<a href=\"http://www.postgresql.org/docs/9.4/static/sql-altertable.html\" title=\"Postgres Alter Table\">Postgres</a>,\n<a href=\"https://www.sqlite.org/lang_altertable.html\" title=\"SQLite Alter Table\">SQLite</a>,\n<a href=\"https://msdn.microsoft.com/en-us/library/ms190273.aspx\" title=\"Microsoft SQL Server Alter Table\">Microsoft SQL Server</a>.</p>\n<h1>Exercise</h1>\n<p>Our exercises use an implementation that only support adding new columns, so give that a try below.</p>",
+  "exercise": {
+   "tasks_title": "Exercise 17",
+   "database": "pixar.js",
+   "manualSubmit": true,
+   "targetDatatableId": "movies",
+   "inputDefaultQuery": "SELECT * FROM movies;",
+   "inputDefaultQuerySelection": [
+    0,
+    999
+   ],
+   "datatable": {
+    "movies": {
+     "defaultQuery": "SELECT * FROM movies;"
+    }
+   },
+   "tasks": [
+    {
+     "text": "Add a column named <strong>Aspect_ratio</strong> with a <strong>FLOAT</strong> data type to store the aspect-ratio each movie was released in.",
+     "postValidateAction": {
+      "resultQuery": "\nSELECT * FROM movies;",
+      "message": "New column added"
+     },
+     "solution": "ALTER TABLE Movies\n  ADD COLUMN Aspect_ratio FLOAT DEFAULT 2.39;",
+     "queryChecks": [
+      "FLOAT"
+     ],
+     "checks": [
+      {
+       "type": "assert_query_succeeds",
+       "data": "\nSELECT aspect_ratio FROM movies;"
+      }
+     ]
+    },
+    {
+     "text": "Add another column named <strong>Language</strong> with a <strong>TEXT</strong> data type to store the language that the movie was released in.  Ensure that the default for this language is <strong>English</strong>.",
+     "postValidateAction": {
+      "resultQuery": "\nSELECT * FROM movies;",
+      "message": "New column added"
+     },
+     "solution": "ALTER TABLE Movies\n  ADD COLUMN Language TEXT DEFAULT \"English\";",
+     "queryChecks": [
+      "DEFAULT",
+      "English"
+     ],
+     "checks": [
+      {
+       "type": "assert_query_succeeds",
+       "data": "\nSELECT language FROM movies;"
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "lesson:creating_tables": {
+  "slug": "creating_tables",
+  "kind": "lesson",
+  "title": "SQL Lesson 16: Creating tables",
+  "body": "<p>When you have new entities and relationships to store in your database, you can create a new database \ntable using the <code>CREATE TABLE</code> statement.  </p>\n<div class=\"definition\">\n    <div class=\"desc\">Create table statement w/ optional table constraint and default value</div>\n    <code class=\"sql\">CREATE TABLE IF NOT EXISTS mytable (\n    column <i>DataType</i> <i>TableConstraint</i> DEFAULT <i>default_value</i>,\n    another_column <i>DataType</i> <i>TableConstraint</i> DEFAULT <i>default_value</i>,\n    &hellip;\n);</code>\n</div>\n\n<p>The structure of the new table is defined by its <i>table schema</i>, which defines a series of columns. \nEach column has a name, the type of data allowed in that column, an <i>optional</i> table constraint \non values being inserted, and an optional default value.</p>\n<p>If there already exists a table with the same name, the SQL implementation will usually throw an error,\nso to suppress the error and skip creating a table if one exists, you can use the <code>IF NOT EXISTS</code> clause.</p>\n<h1>Table data types</h1>\n<p>Different databases support different data types, but the common types support numeric, string, and \nother miscellaneous things like dates, booleans, or even binary data.  Here are some examples that you\nmight use in real code.</p>\n<div class=\"datatable\">\n    <table class=\"table table-striped table-condensed\">\n        <tr>\n            <td style=\"width: 30%\">Data type</td>\n            <td class=\"unhighlight\">Description</td>\n        </tr>\n        <tr>\n            <td><code>INTEGER</code>, <code>BOOLEAN</code></td>\n            <td>The integer datatypes can store whole integer values like the count of a number or an \n                age.  In some implementations, the boolean value is just represented as an integer value\n                of just 0 or 1.</td>\n        </tr>\n        <tr>\n            <td><code>FLOAT</code>, <code>DOUBLE</code>, <code>REAL</code></td>\n            <td>The floating point datatypes can store more precise numerical data like measurements \n                or fractional values.  Different types can be used depending on the floating point \n                precision required for that value.</td>\n        </tr>\n        <tr>\n            <td><code>CHARACTER(num_chars)</code>, <code>VARCHAR(num_chars)</code>, <code>TEXT</code></td>\n            <td><p>The text based datatypes can store strings and text in all sorts of locales.  The distinction\n                between the various types generally amount to underlaying efficiency of the database when working\n                with these columns.</p>\n                <p>Both the CHARACTER and VARCHAR (variable character) types are specified with\n                the max number of characters that they can store (longer values may be truncated), so can be more\n                efficient to store and query with big tables.</p></td>\n        </tr>\n        <tr>\n            <td><code>DATE</code>, <code>DATETIME</code></td>\n            <td>SQL can also store date and time stamps to keep track of time series and event data.  They can be\n                tricky to work with especially when manipulating data across timezones.</td>\n        </tr>\n        <tr>\n            <td><code>BLOB</code></td>\n            <td>Finally, SQL can store binary data in blobs right in the database.  These values are often opaque\n                to the database, so you usually have to store them with the right metadata to requery them.</td>\n        </tr>\n        <tr>\n            <td colspan=\"2\">Docs:\n                <a href=\"http://dev.mysql.com/doc/refman/5.6/en/data-types.html\" title=\"MySQL Data Types\">MySQL</a>,\n                <a href=\"http://www.postgresql.org/docs/9.4/static/datatype.html\" title=\"Postgres Data Types\">Postgres</a>,\n                <a href=\"https://www.sqlite.org/datatype3.html\" title=\"SQLite Data Types\">SQLite</a>,\n                <a href=\"https://msdn.microsoft.com/en-us/library/ms187752.aspx\" title=\"Microsoft SQL Server Data Types\">Microsoft SQL Server</a>\n            </td>\n        </tr>\n    </table>\n</div>\n\n<h1>Table constraints</h1>\n<p>We aren't going to dive too deep into table constraints in this lesson, but each column can have \nadditional table constraints on it which limit what values can be inserted into that column.  This\nis not a comprehensive list, but will show a few common constraints that you might find useful.</p>\n<div class=\"datatable\">\n    <table class=\"table table-striped table-condensed\">\n        <tr>\n            <td style=\"width: 30%\">Constraint</td>\n            <td class=\"unhighlight\">Description</td>\n        </tr>\n        <tr>\n            <td><code>PRIMARY KEY</code></td>\n            <td>This means that the values in this column are unique, and each value can be used to \n                identify a single row in this table.</td>\n        </tr>\n        <tr>\n            <td><code>AUTOINCREMENT</code></td>\n            <td>For integer values, this means that the value is automatically filled in and incremented \n                with each row insertion.  Not supported in all databases.</td>\n        </tr>\n        <tr>\n            <td><code>UNIQUE</code></td>\n            <td>This means that the values in this column have to be unique, so you can't insert another \n                row with the same value in this column as another row in the table.  Differs from the\n                `PRIMARY KEY` in that it doesn't have to be a key for a row in the table.</td>\n        </tr>\n        <tr>\n            <td><code>NOT NULL</code></td>\n            <td>This means that the inserted value can not be `NULL`.</td>\n        </tr>\n        <tr>\n            <td><code>CHECK (expression)</code></td>\n            <td>This allows you to run a more complex expression to test whether the values inserted \n                are valid. For example, you can check that values are positive, or greater than a specific \n                size, or start with a certain prefix, etc.</td>\n        </tr>\n        <tr>\n            <td><code>FOREIGN KEY</code></td>\n            <td>This is a consistency check which ensures that each value in this column corresponds to \n                another value in a column in another table.<br/><br/>\n                For example, if there are two tables, one listing all Employees by ID,\n                and another listing their payroll information, the `FOREIGN KEY` can ensure that every \n                row in the payroll table corresponds to a valid employee in the master Employee list.</td>\n        </tr>\n    </table>\n</div>\n\n<h1>An example</h1>\n<p>Here's an example schema for the <em>Movies</em> table that we've been using in the lessons up to now.</p>\n<div class=\"definition\">\n    <div class=\"desc\">Movies table schema</div>\n    <code class=\"sql\">CREATE TABLE movies (\n    id INTEGER PRIMARY KEY,\n    title TEXT,\n    director TEXT,\n    year INTEGER, \n    length_minutes INTEGER\n);</code>\n</div>\n\n<h1>Exercise</h1>\n<p>In this exercise, you'll need to create a new table for us to insert some new rows into.</p>",
+  "exercise": {
+   "tasks_title": "Exercise 16",
+   "database": "misc.js",
+   "manualSubmit": true,
+   "targetDatatableId": "database",
+   "inputDefaultQuery": "SELECT * FROM database;",
+   "inputDefaultQuerySelection": [
+    0,
+    999
+   ],
+   "loadingText": "Missing table...",
+   "datatable": {
+    "database": {
+     "defaultQuery": "SELECT * FROM database;"
+    }
+   },
+   "tasks": [
+    {
+     "text": "Create a new table named <code style=\"border-bottom: 0\">Database</code> with the following columns:<br/>\n<p>\n&ndash; <code style=\"border-bottom: 0\">Name</code> A string (text) describing the name of the database<br/>\n&ndash; <code style=\"border-bottom: 0\">Version</code> A number (floating point) of the latest version of this database<br/>\n&ndash; <code style=\"border-bottom: 0\">Download_count</code> An integer count of the number of times this database was downloaded<br/>\n</p>\nThis table has no constraints.",
+     "postValidateAction": {
+      "runActionOnce": "\nINSERT INTO database VALUES (\"SQLite\", 3.9, 92000000), (\"MySQL\", 5.5, 512000000), (\"Postgres\", 9.4, 384000000);",
+      "resultQuery": "SELECT * FROM database;",
+      "message": "Table created"
+     },
+     "solution": "CREATE TABLE Database (\n    Name TEXT,\n    Version FLOAT,\n    Download_count INTEGER\n);",
+     "checks": [
+      {
+       "type": "assert_query_succeeds",
+       "data": "\nSELECT Name, Version, Download_count FROM database;",
+       "failQuery": "\nDROP TABLE IF EXISTS database;"
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "lesson:deleting_rows": {
+  "slug": "deleting_rows",
+  "kind": "lesson",
+  "title": "SQL Lesson 15: Deleting rows",
+  "body": "<p>When you need to delete data from a table in the database, you can use a <code>DELETE</code> statement, which \ndescribes the table to act on, and the rows of the table to delete through the <code>WHERE</code> clause.</p>\n<div class=\"definition\">\n    <div class=\"desc\">Delete statement with condition</div>\n    <code class=\"sql\">DELETE FROM mytable\nWHERE condition;</code>\n</div>\n\n<p>If you decide to leave out the <code>WHERE</code> constraint, then <i>all</i> rows are removed, which is a quick\nand easy way to clear out a table completely (if intentional).</p>\n<h1>Taking extra care</h1>\n<p>Like the <code>UPDATE</code> statement from last lesson, it's recommended that you run the constraint in a \n<code>SELECT</code> query first to ensure that you are removing the right rows.  Without a proper backup or test\ndatabase, it is downright easy to irrevocably remove data, so always read your <code>DELETE</code> statements \ntwice and execute once.</p>\n<h1>Exercise</h1>\n<p>The database needs to be cleaned up a little bit, so try and delete a few rows in the tasks below.</p>",
+  "exercise": {
+   "tasks_title": "Exercise 15",
+   "database": "pixar.js",
+   "manualSubmit": true,
+   "targetDatatableId": "movies",
+   "inputDefaultQuery": "SELECT * FROM movies;",
+   "inputDefaultQuerySelection": [
+    0,
+    999
+   ],
+   "datatable": {
+    "movies": {
+     "defaultQuery": "SELECT * FROM movies;"
+    }
+   },
+   "tasks": [
+    {
+     "text": "This database is getting too big, lets remove all movies that were released <strong>before</strong> 2005.",
+     "postValidateAction": {
+      "resultQuery": "SELECT * FROM movies;",
+      "message": "Row(s) deleted"
+     },
+     "solution": "DELETE FROM movies\nwhere year < 2005;",
+     "queryChecks": [
+      "WHERE",
+      "2005"
+     ],
+     "checks": [
+      {
+       "type": "row_count_query_range",
+       "data": {
+        "query": "SELECT * FROM movies \nWHERE year < 2005;",
+        "maxCount": 0
+       }
+      }
+     ]
+    },
+    {
+     "text": "Andrew Stanton has also left the studio, so please remove all movies directed by him.",
+     "postValidateAction": {
+      "resultQuery": "SELECT * FROM movies;",
+      "message": "Row(s) deleted"
+     },
+     "solution": "DELETE FROM movies\nwhere director = \"Andrew Stanton\";",
+     "queryChecks": [
+      "WHERE",
+      "Andrew Stanton"
+     ],
+     "checks": [
+      {
+       "type": "row_count_query_range",
+       "data": {
+        "query": "SELECT * FROM movies \nWHERE director = \"Andrew Stanton\";",
+        "maxCount": 0
+       }
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "lesson:dropping_tables": {
+  "slug": "dropping_tables",
+  "kind": "lesson",
+  "title": "SQL Lesson 18: Dropping tables",
+  "body": "<p>In some rare cases, you may want to remove an entire table including all of its data and metadata, and\nto do so, you can use the <code>DROP TABLE</code> statement, which differs from the <code>DELETE</code> statement in that it\nalso removes the table schema from the database entirely.</p>\n<div class=\"definition\">\n    <div class=\"desc\">Drop table statement</div>\n    <code class=\"sql\">DROP TABLE IF EXISTS mytable;</code>\n</div>\n\n<p>Like the <code>CREATE TABLE</code> statement, the database may throw an error if the specified table does not exist, \nand to suppress that error, you can use the <code>IF EXISTS</code> clause.</p>\n<p>In addition, if you have another table that is dependent on columns in table you are removing (for example, \nwith a <code>FOREIGN KEY</code> dependency) then you will have to either update all dependent tables first to remove \nthe dependent rows or to remove those tables entirely.</p>\n<h1>Exercise</h1>\n<p>We've reached the end of our exercises, so lets clean up by removing all the tables we've worked with.</p>",
+  "exercise": {
+   "tasks_title": "Exercise 18",
+   "database": "pixar.js",
+   "is_two_up": true,
+   "manualSubmit": true,
+   "targetDatatableId": "_result",
+   "inputDefaultQuery": "SELECT * FROM movies;",
+   "inputDefaultQuerySelection": [
+    20,
+    20
+   ],
+   "datatable": {
+    "_tables": [
+     "movies",
+     "boxoffice"
+    ],
+    "_result": {
+     "defaultQuery": "SELECT * FROM movies;"
+    },
+    "movies": {
+     "defaultQuery": "SELECT * FROM movies;"
+    },
+    "boxoffice": {
+     "defaultQuery": "SELECT * FROM boxoffice;"
+    }
+   },
+   "tasks": [
+    {
+     "text": "We've sadly reached the end of our lessons, lets clean up by removing the <strong>Movies</strong> table",
+     "postValidateAction": {
+      "resultQuery": "\nSELECT * FROM movies;",
+      "message": "Table dropped"
+     },
+     "solution": "DROP TABLE Movies;",
+     "checks": [
+      {
+       "type": "assert_query_fails",
+       "data": "\nSELECT * FROM movies;"
+      }
+     ]
+    },
+    {
+     "text": "And drop the <strong>BoxOffice</strong> table as well",
+     "postValidateAction": {
+      "resultQuery": "\nSELECT * FROM boxoffice;",
+      "message": "Table dropped"
+     },
+     "solution": "DROP TABLE BoxOffice;",
+     "checks": [
+      {
+       "type": "assert_query_fails",
+       "data": "\nSELECT * FROM boxoffice;"
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "lesson:end": {
+  "slug": "end",
+  "kind": "lesson",
+  "title": "SQL Lesson X: To infinity and beyond!",
+  "body": "<div class=\"completed\">\n    <img src=\"/cs/images/sqlbolt_complete.png\" alt=\"SQLBolt completed!\" />\n    <div class=\"desc\">You've finished the tutorial!</div>\n</div>\n\n<p>We hope the lessons have given you a bit more experience with SQL and a bit more confidence to use \nSQL with your own data.</p>\n<p>We've just brushed the surface of what SQL is capable of, so to get a better idea of how SQL can be \nused in the real world, we'll be adding more articles in the <a href=\"/topics\" title=\"More Topics: Deep dive into SQL\">More Topics</a> \npart of the site.  If you have the time, we recommend that you continue to dive deeper into SQL!</p>\n<p>If you need further details, it's also recommended that you read the documentation for the specific\ndatabase that you are using, especially since each database has its own set of features and optimizations.</p>\n<p>If you have any suggestions on how to make the site better, you can get in touch using one of the\nlinks in the footer below.</p>\n<p><span style=\"color: black\">And if you found the lessons useful, please consider <a class=\"paypal_donation_button\" href=\"#\" style=\"font-size: 1.0625em\" title=\"Paypal donation\">donating ($4) via Paypal</a> to support \nour site.  Your contribution will help keep the servers running and allow us to improve and add even \nmore material in the future.</span></p>\n<div style=\"margin: 1.5em 0 1em 0;\">\n    <a href=\"/topics\" class=\"btn btn-success\" style=\"font-size: 1em; margin: -0.1em 0 0 0.25em; padding: 0.35em 0.5em 0.25em 0.5em;\">Continue to More Topics &rsaquo;</a>\n</div>",
+  "exercise": null
+ },
+ "lesson:filtering_sorting_query_results": {
+  "slug": "filtering_sorting_query_results",
+  "kind": "lesson",
+  "title": "SQL Lesson 4: Filtering and sorting Query results",
+  "body": "<p>Even though the data in a database may be unique, the results of any particular query may not be &ndash; \ntake our Movies table for example, many different movies can be released the same year.  In such cases, \nSQL provides a convenient way to discard rows that have a duplicate column value by using the <code>DISTINCT</code>\nkeyword.</p>\n<div class=\"definition\">\n    <div class=\"desc\">Select query with unique results</div>\n    <code class=\"sql\">SELECT <strong>DISTINCT</strong> column, another_column, &hellip;\nFROM mytable\nWHERE <i>condition(s)</i>;</code>\n</div>\n\n<p>Since the <code>DISTINCT</code> keyword will blindly remove duplicate rows, we will learn in a future lesson\nhow to discard duplicates based on specific columns using grouping and the <code>GROUP BY</code> clause.</p>\n<h1>Ordering results</h1>\n<p>Unlike our neatly ordered table in the last few lessons, most data in real databases are added in no\nparticular column order.  As a result, it can be difficult to read through and understand the results \nof a query as the size of a table increases to thousands or even millions rows.</p>\n<p>To help with this, SQL provides a way to sort your results by a given column in ascending or descending \norder using the <code>ORDER BY</code> clause.</p>\n<div class=\"definition\">\n    <div class=\"desc\">Select query with ordered results</div>\n    <code class=\"sql\">SELECT column, another_column, &hellip;\nFROM mytable\nWHERE <i>condition(s)</i>\n<strong>ORDER BY column ASC/DESC</strong>;</code>\n</div>\n\n<p>When an <code>ORDER BY</code> clause is specified, each row is sorted alpha-numerically based on the specified\ncolumn's value.  In some databases, you can also specify a collation to better sort data containing\ninternational text.</p>\n<h1>Limiting results to a subset</h1>\n<p>Another clause which is commonly used with the <code>ORDER BY</code> clause are the <code>LIMIT</code> and <code>OFFSET</code> clauses, \nwhich are a useful optimization to indicate to the database the subset of the results you care about.<br />\nThe <code>LIMIT</code> will reduce the number of rows to return, and the optional <code>OFFSET</code> will specify where to \nbegin counting the number rows from.</p>\n<div class=\"definition\">\n    <div class=\"desc\">Select query with limited rows</div>\n    <code class=\"sql\">SELECT column, another_column, &hellip;\nFROM mytable\nWHERE <i>condition(s)</i>\nORDER BY column ASC/DESC\n<strong>LIMIT num_limit OFFSET num_offset</strong>;</code>\n</div>\n\n<p>If you think about websites like Reddit or Pinterest, the front page is a list of links sorted by popularity \nand time, and each subsequent page can be represented by sets of links at different offsets in the \ndatabase.  Using these clauses, the database can then execute queries faster and more efficiently\nby processing and returning only the requested content.</p>\n<div class=\"dyk\">\n    <div class=\"desc\">Did you know?</div>\n    <p>\n    If you are curious about when the <code>LIMIT</code> and <code>OFFSET</code> are applied relative \n    to the other parts of a query, they are generally done last after the other clauses have been applied.  \n    We'll touch more on this in <a href=\"/lesson/select_queries_order_of_execution\" alt=\"SQL Lesson 12: Order of execution\">Lesson 12: Order of execution</a>\n    after introducting a few more parts of the query.\n    </p>\n</div>\n\n<h1>Exercise</h1>\n<p>There are a few concepts in this lesson, but all are pretty straight-forward to apply.  To spice things \nup, we've gone and scrambled the <strong>Movies</strong> table for you in the exercise to better mimic what kind of\ndata you might see in real life.  Try and use the necessary keywords and clauses introduced above in \nyour queries.</p>",
+  "exercise": {
+   "tasks_title": "Exercise 4",
+   "database": "pixar.js",
+   "targetDatatableId": "movies",
+   "inputDefaultQuery": "SELECT * FROM movies;",
+   "inputDefaultQuerySelection": [
+    20,
+    20
+   ],
+   "datatable": {
+    "movies": {
+     "preloadTableAction": {
+      "action": "randomizeRows",
+      "column": "movies"
+     },
+     "defaultQuery": "SELECT * FROM movies;"
+    }
+   },
+   "tasks": [
+    {
+     "text": "List all directors of Pixar movies (alphabetically), without duplicates",
+     "solution": "SELECT DISTINCT director FROM movies\nORDER BY director ASC;",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query_ordered",
+       "data": null
+      }
+     ]
+    },
+    {
+     "text": "List the last four Pixar movies released (ordered from most recent to least)",
+     "userSolution": "SELECT title, year FROM movies\nORDER BY year DESC\nLIMIT 4;",
+     "solution": "SELECT title FROM movies\nORDER BY year DESC\nLIMIT 4;",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query_ordered",
+       "data": null
+      }
+     ]
+    },
+    {
+     "text": "List the <strong>first</strong> five Pixar movies sorted alphabetically",
+     "solution": "SELECT title FROM movies\nORDER BY title ASC\nLIMIT 5;",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query_ordered",
+       "data": null
+      }
+     ]
+    },
+    {
+     "text": "List the <strong>next</strong> five Pixar movies sorted alphabetically",
+     "solution": "SELECT title FROM movies\nORDER BY title ASC\nLIMIT 5 OFFSET 5;",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query_ordered",
+       "data": null
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "lesson:inserting_rows": {
+  "slug": "inserting_rows",
+  "kind": "lesson",
+  "title": "SQL Lesson 13: Inserting rows",
+  "body": "<p>We've spent quite a few lessons on how to query for data in a database, so it's time to start learning\na bit about SQL schemas and how to add new data.</p>\n<h1>What is a Schema?</h1>\n<p>We previously described a table in a database as a two-dimensional set of rows and columns, with the\ncolumns being the properties and the rows being instances of the entity in the table.  In SQL, the \n<i>database schema</i> is what describes the structure of each table, and the datatypes that each column\nof the table can contain.  </p>\n<div class=\"dyk\">\n    <div class=\"desc\">Example: Correlated subquery</div>\n    <p>\n        For example, in our <strong>Movies</strong> table, the values in the <em>Year</em> column must \n        be an Integer, and the values in the <em>Title</em> column must be a String.\n    </p>\n</div>\n\n<p>This fixed structure is what allows a database to be efficient, and consistent despite storing millions\nor even billions of rows.</p>\n<h1>Inserting new data</h1>\n<p>When inserting data into a database, we need to use an <code>INSERT</code> statement, which declares which table\nto write into, the columns of data that we are filling, and one or more rows of data to insert.  In \ngeneral, each row of data you insert should contain values for every corresponding column in the table.\nYou can insert multiple rows at a time by just listing them sequentially.</p>\n<div class=\"definition\">\n    <div class=\"desc\">Insert statement with values for all columns</div>\n    <code class=\"sql\">INSERT INTO mytable\nVALUES (value_or_expr, another_value_or_expr, &hellip;),\n       (value_or_expr_2, another_value_or_expr_2, &hellip;),\n       &hellip;;</code>\n</div>\n\n<p>In some cases, if you have incomplete data and the table contains columns that support default values,\nyou can insert rows with only the columns of data you have by specifying them explicitly.</p>\n<div class=\"definition\">\n    <div class=\"desc\">Insert statement with specific columns</div>\n    <code class=\"sql\">INSERT INTO mytable\n<strong>(column, another_column, &hellip;)</strong>\nVALUES (value_or_expr, another_value_or_expr, &hellip;),\n      (value_or_expr_2, another_value_or_expr_2, &hellip;),\n      &hellip;;</code>\n</div>\n\n<p>In these cases, the number of values need to match the number of columns specified.  Despite this being \na more verbose statement to write, inserting values this way has the benefit of being forward compatible.\nFor example, if you add a new column to the table with a default value, no hardcoded <code>INSERT</code> statements\nwill have to change as a result to accommodate that change.</p>\n<p>In addition, you can use mathematical and string expressions with the values that you are inserting.<br />\nThis can be useful to ensure that all data inserted is formatted a certain way.</p>\n<div class=\"definition\">\n    <div class=\"desc\">Example Insert statement with expressions</div>\n    <code class=\"sql\">INSERT INTO boxoffice\n<strong>(movie_id, rating, sales_in_millions)</strong>\nVALUES (1, 9.9, 283742034 / 1000000);</code>\n</div>\n\n<h1>Exercise</h1>\n<p>In this exercise, we are going to play studio executive and add a few movies to the <strong>Movies</strong> to our\nportfolio.  In this table, the <strong>Id</strong> is an auto-incrementing integer, so you can try \ninserting a row with only the other columns defined.  </p>\n<p>Since the following lessons will modify the database, you'll have to manually run each query once they \nare ready to go.</p>",
+  "exercise": {
+   "tasks_title": "Exercise 13",
+   "database": "pixar.js",
+   "is_two_up": true,
+   "manualSubmit": true,
+   "targetDatatableId": "_result",
+   "inputDefaultQuery": "SELECT * FROM movies;",
+   "inputDefaultQuerySelection": [
+    20,
+    20
+   ],
+   "datatable": {
+    "_tables": [
+     "movies",
+     "boxoffice"
+    ],
+    "_result": {
+     "defaultQuery": "SELECT * FROM movies;"
+    },
+    "movies": {
+     "preloadTableQuery": "DELETE FROM movies WHERE id > 3;",
+     "defaultQuery": "SELECT * FROM movies;"
+    },
+    "boxoffice": {
+     "preloadTableQuery": "DELETE FROM boxoffice WHERE movie_id > 3;",
+     "defaultQuery": "SELECT * FROM boxoffice;"
+    }
+   },
+   "tasks": [
+    {
+     "text": "Add the studio's new production, <strong>Toy Story 4</strong> to the list of movies (you can use any director)",
+     "postValidateAction": {
+      "resultQuery": "SELECT * FROM movies;",
+      "message": "Row(s) inserted"
+     },
+     "solution": "INSERT INTO movies VALUES (4, \"Toy Story 4\", \"El Directore\", 2015, 90);",
+     "checks": [
+      {
+       "type": "row_exists_contain_col_val",
+       "data": {
+        "table": "movies",
+        "column": "title",
+        "value": "Toy Story 4",
+        "ignoreCase": true
+       }
+      }
+     ]
+    },
+    {
+     "text": "Toy Story 4 has been released to critical acclaim!  It had a rating of <strong>8.7</strong>, and made <strong>340 million domestically</strong> and <strong>270 million internationally</strong>.  Add the record to the <code>BoxOffice</code> table.",
+     "postValidateAction": {
+      "resultQuery": "SELECT * FROM boxoffice;",
+      "message": "Row(s) inserted"
+     },
+     "solution": "INSERT INTO boxoffice VALUES (4, 8.7, 340000000, 270000000);",
+     "checks": [
+      {
+       "type": "row_count_query_range",
+       "data": {
+        "query": "SELECT * FROM boxoffice \nWHERE movie_id IN (\n    SELECT id FROM movies\n    WHERE title LIKE \"Toy Story 4\"\n);",
+        "minCount": 1,
+        "maxCount": 1
+       }
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "lesson:introduction": {
+  "slug": "introduction",
+  "kind": "lesson",
+  "title": "Introduction to SQL",
+  "body": "<p>Welcome to SQLBolt, a series of interactive lessons and exercises designed to help you quickly \nlearn SQL right in your browser.</p>\n<h1>What is SQL?</h1>\n<p>SQL, or Structured Query Language, is a language designed to allow both technical and non-technical \nusers to query, manipulate, and transform data from a relational database.  And due to its simplicity, \nSQL databases provide safe and scalable storage for millions of websites and mobile applications.</p>\n<div class=\"dyk\">\n    <div class=\"desc\">Did you know?</div>\n    <p>\n    There are many popular SQL databases including SQLite, MySQL, Postgres, Oracle and Microsoft \n    SQL Server.  All of them support the common SQL language standard, which is what this site \n    will be teaching, but each implementation can differ in the additional features and storage \n    types it supports.\n    </p>\n</div>\n\n<h1>Relational databases</h1>\n<p>Before learning the SQL syntax, it's important to have a model for what a relational database actually \nis.  A relational database represents a collection of related (two-dimensional) tables.  Each of the \ntables are similar to an Excel spreadsheet, with a fixed number of named columns (the attributes or \nproperties of the table) and any number of rows of data.</p>\n<p>For example, if the Department of Motor Vehicles had a database, you might find a table containing \nall the known vehicles that people in the state are driving.  This table might need to store the \nmodel name, type, number of wheels, and number of doors of each vehicle for example.</p>\n<div class=\"datatable_title col-xs-12\">\n    Table: Vehicles\n</div>\n\n<div class=\"datatable\">\n    <table class=\"table table-striped table-condensed\">\n        <tr>\n            <td class='column_name'>Id</td>\n            <td class='column_name'>Make/Model</td>\n            <td class='column_name'># Wheels</td>\n            <td class='column_name'># Doors</td>\n            <td class='column_name'>Type</td>\n        </tr>\n        <tr>\n            <td>1</td>\n            <td>Ford Focus</td>\n            <td>4</td>\n            <td>4</td>\n            <td>Sedan</td>\n        </tr>\n        <tr>\n            <td>2</td>\n            <td>Tesla Roadster</td>\n            <td>4</td>\n            <td>2</td>\n            <td>Sports</td>\n        </tr>\n        <tr>\n            <td>3</td>\n            <td>Kawakasi Ninja</td>\n            <td>2</td>\n            <td>0</td>\n            <td>Motorcycle</td>\n        </tr>\n        <tr>\n            <td>4</td>\n            <td>McLaren Formula 1</td>\n            <td>4</td>\n            <td>0</td>\n            <td>Race</td>\n        </tr>\n        <tr>\n            <td>5</td>\n            <td>Tesla S</td>\n            <td>4</td>\n            <td>4</td>\n            <td>Sedan</td>\n        </tr>\n    </table>\n</div>\n\n<p>In such a database, you might find additional related tables containing information such as a list \nof all registered drivers in the state, the types of driving licenses that can be granted, or even \ndriving violations for each driver.</p>\n<p>By learning SQL, the goal is to learn how to answer specific questions about this data, like \n<i>\"What types of vehicles are on the road have less than four wheels?\"</i>, or <i>\"How many models \nof cars does Tesla produce?\"</i>, to help us make better decisions down the road.</p>\n<h1>About the lessons</h1>\n<p>Since most users will be learning SQL to interact with an existing database, the lessons begin by \nintroducing you to the various parts of an SQL query.  The later lessons will then show you how to\nalter a table (or schema) and create new tables from scratch.</p>\n<p>Each lesson will introduce a different concept and end with an interactive exercise.  Go at your \npace and don't be afraid to spend time experimenting with the exercises before continuing!  If\nyou happen to be familiar with SQL already, you can skip ahead using the links in the top-right, \nbut we would recommend you work through the lessons anyways!</p>\n<p>By the end, we hope you will be able to have a strong foundation for using SQL in your own projects \nand beyond. </p>\n<div style=\"margin: 1.5em 0 1em 0;\">\n    <a href=\"/lesson/select_queries_introduction\" class=\"btn btn-success\" style=\"font-size: 1em; margin: -0.1em 0 0 0em; padding: 0.5em 0.6em 0.35em 0.6em;\">Begin Lesson 1: Writing SQL Queries &rsaquo;</a>\n</div>",
+  "exercise": null
+ },
+ "lesson:select_queries_introduction": {
+  "slug": "select_queries_introduction",
+  "kind": "lesson",
+  "title": "SQL Lesson 1: SELECT queries 101",
+  "body": "<p>To retrieve data from a SQL database, we need to write <code>SELECT</code> statements, which are often colloquially \nrefered to as <i>queries</i>.  A query in itself is just a statement which declares what data we are \nlooking for, where to find it in the database, and optionally, how to transform it before it is returned. \nIt has a specific syntax though, which is what we are going to learn in the following exercises.</p>\n<p>As we mentioned in the introduction, you can think of a table in SQL as a type of an entity (ie. Dogs), \nand each row in that table as a specific <i>instance</i> of that type (ie. A pug, a beagle, a different \ncolored pug, etc).  This means that the columns would then represent the common properties shared\nby all instances of that entity (ie. Color of fur, length of tail, etc).</p>\n<p>And given a table of data, the most basic query we could write would be one that selects for a couple \ncolumns (properties) of the table with all the rows (instances).</p>\n<div class=\"definition\">\n    <div class=\"desc\">Select query for a specific columns</div>\n    <code class=\"sql\">SELECT column, another_column, &hellip;\nFROM mytable;</code>\n</div>\n\n<p>The result of this query will be a two-dimensional set of rows and columns, effectively a copy of the \ntable, but only with the columns that we requested.</p>\n<p>If we want to retrieve absolutely all the columns of data from a table, we can then use the asterisk (<code>*</code>) \nshorthand in place of listing all the column names individually.</p>\n<div class=\"definition\">\n    <div class=\"desc\">Select query for all columns</div>\n    <code class=\"sql\">SELECT * \nFROM mytable;</code>\n</div>\n\n<p>This query, in particular, is really useful because it's a simple way to inspect a table by dumping \nall the data at once.</p>\n<h1>Exercise</h1>\n<p>We will be using a database with data about some of Pixar's classic movies for most of our exercises.\nThis first exercise will only involve the <strong>Movies</strong> table, and the default query below currently \nshows all the properties of each movie.  To continue onto the next lesson, alter the query to find\nthe exact information we need for each task.</p>",
+  "exercise": {
+   "tasks_title": "Exercise 1",
+   "database": "pixar.js",
+   "targetDatatableId": "movies",
+   "inputDefaultQuery": "SELECT * FROM movies;",
+   "inputDefaultQuerySelection": [
+    7,
+    8
+   ],
+   "datatable": {
+    "movies": {
+     "defaultQuery": "SELECT * FROM movies;"
+    }
+   },
+   "tasks": [
+    {
+     "text": "Find the <code>title</code> of each film",
+     "solution": "SELECT title FROM movies;",
+     "checks": [
+      {
+       "type": "col_equals",
+       "data": [
+        "title"
+       ]
+      }
+     ]
+    },
+    {
+     "text": "Find the <code>director</code> of each film",
+     "solution": "SELECT director FROM movies; ",
+     "checks": [
+      {
+       "type": "col_equals",
+       "data": [
+        "director"
+       ]
+      }
+     ]
+    },
+    {
+     "text": "Find the <code>title</code> and <code>director</code> of each film",
+     "solution": "SELECT title, director FROM movies; ",
+     "checks": [
+      {
+       "type": "col_equals",
+       "data": [
+        "title",
+        "director"
+       ]
+      }
+     ]
+    },
+    {
+     "text": "Find the <code>title</code> and <code>year</code> of each film",
+     "solution": "SELECT title, year FROM movies; ",
+     "checks": [
+      {
+       "type": "col_equals",
+       "data": [
+        "title",
+        "year"
+       ]
+      }
+     ]
+    },
+    {
+     "text": "Find <code>all</code> the information about each film",
+     "solution": "SELECT * FROM movies; ",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query",
+       "data": null
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "lesson:select_queries_order_of_execution": {
+  "slug": "select_queries_order_of_execution",
+  "kind": "lesson",
+  "title": "SQL Lesson 12: Order of execution of a Query",
+  "body": "<p>Now that we have an idea of all the parts of a query, we can now talk about how they all fit together \nin the context of a complete query.</p>\n<div class=\"definition\">\n    <div class=\"desc\">Complete SELECT query</div>\n    <code class=\"sql\">SELECT DISTINCT column, AGG_FUNC(<i>column_or_expression</i>), &hellip;\nFROM mytable\n    JOIN another_table\n      ON mytable.column = another_table.column\n    WHERE <i>constraint_expression</i>\n    GROUP BY column\n    HAVING <i>constraint_expression</i>\n    ORDER BY <i>column</i> ASC/DESC\n    LIMIT <i>count</i> OFFSET <i>COUNT</i>;</code>\n</div>\n\n<p>Each query begins with finding the data that we need in a database, and then filtering that data down\ninto something that can be processed and understood as quickly as possible.  Because each part of the\nquery is executed sequentially, it's important to understand the order of execution so that you know\nwhat results are accessible where.</p>\n<h1>Query order of execution</h1>\n<h2>1. <code>FROM</code> and <code>JOIN</code>s</h2>\n<p>The <code>FROM</code> clause, and subsequent <code>JOIN</code>s are first executed to determine the total working set of\ndata that is being queried.  This includes subqueries in this clause, and can cause temporary tables\nto be created under the hood containing all the columns and rows of the tables being joined.</p>\n<h2>2. <code>WHERE</code></h2>\n<p>Once we have the total working set of data, the first-pass <code>WHERE</code> constraints are applied to the \nindividual rows, and rows that do not satisfy the constraint are discarded.  Each of the constraints\ncan only access columns directly from the tables requested in the <code>FROM</code> clause.  Aliases in the\n<code>SELECT</code> part of the query are not accessible in most databases since they may include \nexpressions dependent on parts of the query that have not yet executed.</p>\n<h2>3. <code>GROUP BY</code></h2>\n<p>The remaining rows after the <code>WHERE</code> constraints are applied are then grouped based on common values\nin the column specified in the <code>GROUP BY</code> clause.  As a result of the grouping, there will only be as \nmany rows as there are unique values in that column.  Implicitly, this means that you should only need \nto use this when you have aggregate functions in your query.</p>\n<h2>4. <code>HAVING</code></h2>\n<p>If the query has a <code>GROUP BY</code> clause, then the constraints in the <code>HAVING</code> clause are then applied\nto the grouped rows, discard the grouped rows that don't satisfy the constraint.  Like the <code>WHERE</code> \nclause, aliases are also not accessible from this step in most databases.</p>\n<h2>5. <code>SELECT</code></h2>\n<p>Any expressions in the <code>SELECT</code> part of the query are finally computed.</p>\n<h2>6. <code>DISTINCT</code></h2>\n<p>Of the remaining rows, rows with duplicate values in the column marked as <code>DISTINCT</code> will be discarded.</p>\n<h2>7. <code>ORDER BY</code></h2>\n<p>If an order is specified by the <code>ORDER BY</code> clause, the rows are then sorted by the specified data in \neither ascending or descending order.  Since all the expressions in the <code>SELECT</code> part of the query \nhave been computed, you can reference aliases in this clause.</p>\n<h2>8. <code>LIMIT</code> / <code>OFFSET</code></h2>\n<p>Finally, the rows that fall outside the range specified by the <code>LIMIT</code> and <code>OFFSET</code> are discarded, \nleaving the final set of rows to be returned from the query.</p>\n<h2>Conclusion</h2>\n<p>Not every query needs to have all the parts we listed above, but a part of why SQL is so flexible is\nthat it allows developers and data analysts to quickly manipulate data without having to write additional\ncode, all just by using the above clauses.</p>\n<h1>Exercise</h1>\n<p>Here ends our lessons on <code>SELECT</code> queries, congrats of making it this far!  This exercise will try\nand test your understanding of queries, so don't be discouraged if you find them challenging.  Just\ntry your best.</p>",
+  "exercise": {
+   "tasks_title": "Exercise 12",
+   "database": "pixar.js",
+   "is_two_up": true,
+   "targetDatatableId": "_result",
+   "inputDefaultQuery": "SELECT * FROM movies;",
+   "inputDefaultQuerySelection": [
+    20,
+    20
+   ],
+   "datatable": {
+    "_tables": [
+     "movies",
+     "boxoffice"
+    ],
+    "_result": {
+     "defaultQuery": "SELECT * FROM movies;"
+    },
+    "movies": {
+     "defaultQuery": "SELECT * FROM movies;"
+    },
+    "boxoffice": {
+     "defaultQuery": "SELECT * FROM boxoffice;"
+    }
+   },
+   "tasks": [
+    {
+     "text": "Find the number of movies each director has directed",
+     "hint_text": "Try grouping by director and then counting the movies",
+     "solution": "SELECT director, COUNT(id) as Num_movies_directed\nFROM movies\nGROUP BY director;",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query",
+       "data": null
+      }
+     ]
+    },
+    {
+     "text": "Find the total domestic and international sales that can be attributed to each director",
+     "hint_text": "Try joining the data and group them before summing up the sales",
+     "solution": "SELECT director, SUM(domestic_sales + international_sales) as Cumulative_sales_from_all_movies\nFROM movies\n    INNER JOIN boxoffice\n        ON movies.id = boxoffice.movie_id\nGROUP BY director;",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query",
+       "data": null
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "lesson:select_queries_review": {
+  "slug": "select_queries_review",
+  "kind": "lesson",
+  "title": "SQL Review: Simple SELECT Queries",
+  "body": "<p>You've done a good job getting to this point!  Now that you've gotten a taste of how to write a basic \nquery, you need to practice writing queries that solve actual problems.</p>\n<div class=\"definition\">\n    <div class=\"desc\">SELECT query</div>\n    <code class=\"sql\">SELECT column, another_column, &hellip;\nFROM mytable\nWHERE <i>condition(s)</i>\nORDER BY column ASC/DESC\nLIMIT num_limit OFFSET num_offset;</code>\n</div>\n\n<h1>Exercise</h1>\n<p>In the exercise below, you will be working with a different table.  This table instead contains information \nabout a few of the most populous cities of North America<sup><a href=\"http://en.wikipedia.org/wiki/List_of_North_American_cities_by_population\" title=\"Wikipedia: North American \ncities by population\">[1]</a></sup> including their population and geo-spatial location in the world.  </p>\n<div class=\"dyk\">\n    <div class=\"desc\">Did you know?</div>\n    <p>\n    Positive latitudes correspond to the northern hemisphere, and positive longitudes \n    correspond to the eastern hemisphere.  Since North America is north of the equator and west of \n    the prime meridian, all of the cities in the list have positive latitudes and negative longitudes.\n    </p>\n</div>\n\n<p>Try and write some queries to find the information requested in the tasks below.  You may have to \nuse a different combination of clauses in your query for each task.  Once you're done, continue onto \nthe next lesson to learn about queries that span multiple tables.</p>",
+  "exercise": {
+   "tasks_title": "Review 1",
+   "database": "misc.js",
+   "targetDatatableId": "north_american_cities",
+   "inputDefaultQuery": "SELECT * FROM north_american_cities;",
+   "inputDefaultQuerySelection": [
+    0,
+    999
+   ],
+   "datatable": {
+    "north_american_cities": {
+     "preloadTableQuery": "DROP TABLE movies; DROP TABLE boxoffice;",
+     "defaultQuery": "SELECT * FROM north_american_cities;"
+    }
+   },
+   "tasks": [
+    {
+     "text": "List all the Canadian cities and their populations",
+     "solution": "SELECT city, population FROM north_american_cities\nWHERE country = \"Canada\";",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query",
+       "data": null
+      }
+     ]
+    },
+    {
+     "text": "Order all the cities in the United States by their latitude from north to south",
+     "hint_text": "Smaller latitudes are more southern",
+     "userSolution": "SELECT city, latitude FROM north_american_cities\nWHERE country = \"United States\"\nORDER BY latitude DESC;",
+     "solution": "SELECT city FROM north_american_cities\nWHERE country = \"United States\"\nORDER BY latitude DESC;",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query_ordered",
+       "data": null
+      }
+     ]
+    },
+    {
+     "text": "List all the cities west of Chicago, ordered from west to east",
+     "hint_text": "Smaller longitudes are more western",
+     "userSolution": "SELECT city, longitude FROM north_american_cities\nWHERE longitude < -87.629798\nORDER BY longitude ASC;",
+     "solution": "SELECT city FROM north_american_cities\nWHERE longitude < -87.629798\nORDER BY longitude ASC;",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query_ordered",
+       "data": null
+      }
+     ]
+    },
+    {
+     "text": "List the two largest cities in Mexico (by population)",
+     "userSolution": "SELECT city, population FROM north_american_cities\nWHERE country LIKE \"Mexico\"\nORDER BY population DESC\nLIMIT 2;",
+     "solution": "SELECT city FROM north_american_cities\nWHERE country LIKE \"Mexico\"\nORDER BY population DESC\nLIMIT 2;",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query_ordered",
+       "data": null
+      }
+     ]
+    },
+    {
+     "text": "List the third and fourth largest cities (by population) in the United States and their population",
+     "userSolution": "SELECT city, population FROM north_american_cities\nWHERE country LIKE \"United States\"\nORDER BY population DESC\nLIMIT 2 OFFSET 2;",
+     "solution": "SELECT city FROM north_american_cities\nWHERE country LIKE \"United States\"\nORDER BY population DESC\nLIMIT 2 OFFSET 2;",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query_ordered",
+       "data": null
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "lesson:select_queries_with_aggregates": {
+  "slug": "select_queries_with_aggregates",
+  "kind": "lesson",
+  "title": "SQL Lesson 10: Queries with aggregates (Pt. 1)",
+  "body": "<p>In addition to the simple expressions that we introduced last lesson, SQL also supports the use of\naggregate expressions (or functions) that allow you to summarize information about a group of rows\nof data.  With the Pixar database that you've been using, aggregate functions can be used to answer \nquestions like, \"How many movies has Pixar produced?\", or \"What is the highest grossing Pixar film \neach year?\". </p>\n<div class=\"definition\">\n    <div class=\"desc\">Select query with aggregate functions over all rows</div>\n    <code class=\"sql\"><strong>SELECT AGG_FUNC(<i>column_or_expression</i>) AS aggregate_description</strong>, &hellip;\nFROM mytable\nWHERE <i>constraint_expression</i>;</code>\n</div>\n\n<p>Without a specified grouping, each aggregate function is going to run on the whole set of result \nrows and return a single value.  And like normal expressions, giving your aggregate functions an alias\nensures that the results will be easier to read and process.</p>\n<h1>Common aggregate functions</h1>\n<p>Here are some common aggregate functions that we are going to use in our examples:</p>\n<div class=\"datatable\">\n    <table class=\"table table-striped table-condensed\">\n        <tr>\n            <td style=\"width: 20%\">Function</td>\n            <td class=\"unhighlight\">Description</td>\n        </tr>\n        <tr>\n            <td><strong>COUNT(</strong>*<strong>)</strong>, <strong>COUNT(</strong><span style=\"font-style: italic\">column</span><strong>)</strong></td>\n            <td>A common function used to counts the number of rows in the group if no column name is specified. \n                Otherwise, count the number of rows in the group with non-NULL values in the specified column.</td>\n        </tr>\n        <tr>\n            <td><strong>MIN(</strong><span style=\"font-style: italic\">column</span><strong>)</strong></td>\n            <td>Finds the smallest numerical value in the specified column for all rows in the group.</td>\n        </tr>\n        <tr>\n            <td><strong>MAX(</strong><span style=\"font-style: italic\">column</span><strong>)</strong></td>\n            <td>Finds the largest numerical value in the specified column for all rows in the group.</td>\n        </tr>\n        <tr>\n            <td><strong>AVG(</strong><span style=\"font-style: italic\">column</span></strong>)<strong></td>\n            <td>Finds the average numerical value in the specified column for all rows in the group.</td>\n        </tr>\n        <tr>\n            <td><strong>SUM(</strong><span style=\"font-style: italic\">column</span><strong>)</strong></td>\n            <td>Finds the sum of all numerical values in the specified column for the rows in the group.</td>\n        </tr>\n        <tr>\n            <td colspan=\"2\">Docs:\n                <a href=\"https://dev.mysql.com/doc/refman/5.6/en/group-by-functions.html\" title=\"MySQL Aggregate Functions\">MySQL</a>,\n                <a href=\"http://www.postgresql.org/docs/9.4/static/functions-aggregate.html\" title=\"Postgres Aggregate Functions\">Postgres</a>,\n                <a href=\"http://www.sqlite.org/lang_aggfunc.html\" title=\"SQLite Aggregate Functions\">SQLite</a>,\n                <a href=\"https://msdn.microsoft.com/en-us/library/ms173454.aspx\" title=\"Microsoft SQL Server Aggregate Functions\">Microsoft SQL Server</a>\n            </td>\n        </tr>\n    </table>\n</div>\n\n<h1>Grouped aggregate functions</h1>\n<p>In addition to aggregating across all the rows, you can instead apply the aggregate functions to \nindividual groups of data within that group (ie. box office sales for Comedies vs Action movies).<br />\nThis would then create as many results as there are unique groups defined as by the <code>GROUP BY</code> clause.</p>\n<div class=\"definition\">\n    <div class=\"desc\">Select query with aggregate functions over groups</div>\n    <code class=\"sql\">SELECT AGG_FUNC(<i>column_or_expression</i>) AS aggregate_description, &hellip;\nFROM mytable\nWHERE <i>constraint_expression</i>\n<strong>GROUP BY column</strong>;</code>\n</div>\n\n<p>The <code>GROUP BY</code> clause works by grouping rows that have the same value in the column specified.  </p>\n<!--\n<div class=\"dyk\">\n    <div class=\"desc\">Did you know?</div>\n    <p>\n    If you aren't using aggregate functions with your `GROUP BY` clause, then the resulting\n    behavior will be similar to using the `DISTINCT` keyword.\n    </p>\n</div>\n-->\n\n<h1>Exercise</h1>\n<p>For this exercise, we are going to work with our <strong>Employees</strong> table.  Notice how the rows in this \ntable have shared data, which will give us an opportunity to use aggregate functions to summarize \nsome high-level metrics about the teams.  Go ahead and give it a shot.</p>",
+  "exercise": {
+   "tasks_title": "Exercise 10",
+   "database": "misc.js",
+   "targetDatatableId": "employees",
+   "inputDefaultQuery": "SELECT * FROM employees;",
+   "inputDefaultQuerySelection": [
+    0,
+    999
+   ],
+   "datatable": {
+    "employees": {
+     "defaultQuery": "SELECT * FROM employees;"
+    }
+   },
+   "tasks": [
+    {
+     "text": "Find the longest time that an employee has been at the studio",
+     "hint_text": "Take the <strong>MAX()</strong> of the years employed.",
+     "solution": "SELECT MAX(years_employed) as Max_years_employed\nFROM employees;",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query",
+       "data": null
+      }
+     ]
+    },
+    {
+     "text": "For each role, find the average number of years employed by employees in that role",
+     "hint_text": "Group the results by <strong>Role</strong> and then take the <strong>AVG()</strong>.",
+     "solution": "SELECT role, AVG(years_employed) as Average_years_employed\nFROM employees\nGROUP BY role;",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query",
+       "data": null
+      }
+     ]
+    },
+    {
+     "text": "Find the total number of employee years worked in each building",
+     "hint_text": "Group the results by <strong>Building</strong> and then take the <strong>SUM()</strong>.",
+     "solution": "SELECT building, SUM(years_employed) as Total_years_employed\nFROM employees\nGROUP BY building;",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query",
+       "data": null
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "lesson:select_queries_with_aggregates_pt_2": {
+  "slug": "select_queries_with_aggregates_pt_2",
+  "kind": "lesson",
+  "title": "SQL Lesson 11: Queries with aggregates (Pt. 2)",
+  "body": "<p>Our queries are getting fairly complex, but we have nearly introduced all the important parts of a \n<code>SELECT</code> query.  One thing that you might have noticed is that if the <code>GROUP BY</code> clause is executed\nafter the <code>WHERE</code> clause (which filters the rows which are to be grouped), then how exactly do we \nfilter the grouped rows?  </p>\n<p>Luckily, SQL allows us to do this by adding an additional <code>HAVING</code> clause which is used specifically \nwith the <code>GROUP BY</code> clause to allow us to filter grouped rows from the result set.</p>\n<div class=\"definition\">\n    <div class=\"desc\">Select query with HAVING constraint</div>\n    <code class=\"sql\">SELECT group_by_column, AGG_FUNC(<i>column_expression</i>) AS aggregate_result_alias, &hellip;\nFROM mytable\nWHERE <i>condition</i>\nGROUP BY column\n<strong>HAVING <i>group_condition</i></strong>;</code>\n</div>\n\n<p>The <code>HAVING</code> clause constraints are written the same way as the <code>WHERE</code> clause constraints, and are \napplied to the grouped rows.  With our examples, this might not seem like a particularly useful\nconstruct, but if you imagine data with millions of rows with different properties, being able to apply\nadditional constraints is often necessary to quickly make sense of the data.</p>\n<div class=\"dyk\">\n    <div class=\"desc\">Did you know?</div>\n    <p>\n    If you aren't using the `GROUP BY` clause, a simple `WHERE` clause will suffice.\n    </p>\n</div>\n\n<h1>Exercise</h1>\n<p>For this exercise, you are going to dive deeper into <strong>Employee</strong> data at the film studio.  Think about\nthe different clauses you want to apply for each task.</p>",
+  "exercise": {
+   "tasks_title": "Exercise 11",
+   "database": "misc.js",
+   "targetDatatableId": "employees",
+   "inputDefaultQuery": "SELECT * FROM employees;",
+   "inputDefaultQuerySelection": [
+    0,
+    999
+   ],
+   "datatable": {
+    "employees": {
+     "defaultQuery": "SELECT * FROM employees;"
+    }
+   },
+   "tasks": [
+    {
+     "text": "Find the number of Artists in the studio (without a <strong>HAVING</strong> clause)",
+     "hint_text": "You can count the number of artists.",
+     "userSolution": "SELECT role, COUNT(*) as Number_of_artists\nFROM employees\nWHERE role = \"Artist\";",
+     "solution": "SELECT COUNT(*) as Number_of_artists\nFROM employees\nWHERE role = \"Artist\";",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query",
+       "data": null
+      }
+     ]
+    },
+    {
+     "text": "Find the number of Employees of each role in the studio",
+     "hint_text": "You can count the rows and group by each role.",
+     "solution": "SELECT role, COUNT(*)\nFROM employees\nGROUP BY role;",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query",
+       "data": null
+      }
+     ]
+    },
+    {
+     "text": "Find the total number of years employed by all Engineers",
+     "hint_text": "Similar to same query as before, add a constraint on the role.",
+     "userSolution": "SELECT role, SUM(years_employed)\nFROM employees\nGROUP BY role\nHAVING role = \"Engineer\";",
+     "solution": "SELECT SUM(years_employed)\nFROM employees\nGROUP BY role\nHAVING role = \"Engineer\";",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query",
+       "data": null
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "lesson:select_queries_with_constraints": {
+  "slug": "select_queries_with_constraints",
+  "kind": "lesson",
+  "title": "SQL Lesson 2: Queries with constraints (Pt. 1)",
+  "body": "<p>Now we know how to select for specific columns of data from a table, but if you had a table with a \nhundred million rows of data, reading through all the rows would be inefficient and perhaps even\nimpossible.</p>\n<p>In order to filter certain results from being returned, we need to use a <code>WHERE</code> clause in the query.\nThe clause is applied to each row of data by checking specific column values to determine whether it\nshould be included in the results or not.</p>\n<div class=\"definition row\">\n    <div class=\"desc\">Select query with constraints</div>\n    <code class=\"sql\">SELECT column, another_column, &hellip;\nFROM mytable\n<strong>WHERE <i>condition</i>\n    AND/OR <i>another_condition</i>\n    AND/OR &hellip;</strong>;</code>\n</div>\n\n<p>More complex clauses can be constructed by joining numerous <code>AND</code> or <code>OR</code> logical keywords (ie. \nnum_wheels &gt;= 4 AND doors &lt;= 2).  And below are some useful operators that you can use for numerical \ndata (ie. integer or floating point):</p>\n<div class=\"datatable\">\n    <table class=\"table table-striped table-condensed\">\n        <tr>\n            <td style=\"width: 20%; text-align: center;\">Operator</td>\n            <td style=\"width: 50%\">Condition</td>\n            <td>SQL Example</td>\n        </tr>\n        <tr>\n            <td style=\"text-align: center;\">=, !=, &lt;, &lt;=, &gt;, &gt=</td>\n            <td>Standard numerical operators</td>\n            <td>col_name <span class=\"faux-keyword\">!=</span> 4</td>\n        </tr>\n        <tr>\n            <td style=\"text-align: center;\">BETWEEN &hellip; AND &hellip;</td>\n            <td>Number is within range of two values (inclusive)</td>\n            <td>col_name <span class=\"faux-keyword\">BETWEEN</span> 1.5 <span class=\"faux-keyword\">AND</span> 10.5</td>\n        </tr>\n        <tr>\n            <td style=\"text-align: center;\">NOT BETWEEN &hellip; AND &hellip;</td>\n            <td>Number is not within range of two values (inclusive)</td>\n            <td>col_name <span class=\"faux-keyword\">NOT BETWEEN</span> 1 <span class=\"faux-keyword\">AND</span> 10</td>\n        </tr>\n        <tr>\n            <td style=\"text-align: center;\">IN (&hellip;)</td>\n            <td>Number exists in a list</td>\n            <td>col_name <span class=\"faux-keyword\">IN</span> (2, 4, 6)</td>\n        </tr>\n        <tr>\n            <td style=\"text-align: center;\">NOT IN (&hellip;)</td>\n            <td>Number does not exist in a list</td>\n            <td>col_name <span class=\"faux-keyword\">NOT IN</span> (1, 3, 5)</td>\n        </tr>\n    </table>\n</div>\n\n<p>In addition to making the results more manageable to understand, writing clauses to constrain the\nset of rows returned also allows the query to run faster due to the reduction in unnecessary data\nbeing returned.</p>\n<div class=\"dyk\">\n    <div class=\"desc\">Did you know?</div>\n    <p>\n    As you might have noticed by now, SQL doesn't <i>require</i> you to write the keywords all capitalized,\n    but as a convention, it helps people distinguish SQL keywords from column and tables names, and makes\n    the query easier to read.\n    </p>\n</div>\n\n<h1>Exercise</h1>\n<p>Using the right constraints, find the information we need from the <strong>Movies</strong> table for each task below.</p>",
+  "exercise": {
+   "tasks_title": "Exercise 2",
+   "database": "pixar.js",
+   "targetDatatableId": "movies",
+   "inputDefaultQuery": "SELECT * FROM movies;",
+   "inputDefaultQuerySelection": [
+    7,
+    8
+   ],
+   "datatable": {
+    "movies": {
+     "defaultQuery": "SELECT * FROM movies;"
+    }
+   },
+   "tasks": [
+    {
+     "text": "Find the movie with a row <code>id</code> of 6",
+     "userSolution": "SELECT id, title FROM movies \nWHERE id = 6;",
+     "solution": "SELECT title FROM movies \nWHERE id = 6;",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query",
+       "data": null
+      }
+     ]
+    },
+    {
+     "text": "Find the movies released in the <code>year</code>s between 2000 and 2010",
+     "userSolution": "SELECT title, year FROM movies\nWHERE year BETWEEN 2000 AND 2010;",
+     "solution": "SELECT title FROM movies\nWHERE year BETWEEN 2000 AND 2010;",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query",
+       "data": null
+      }
+     ]
+    },
+    {
+     "text": "Find the movies <strong>not</strong> released in the <code>year</code>s between 2000 and 2010",
+     "userSolution": "SELECT title, year FROM movies\nWHERE year < 2000 OR year > 2010;",
+     "solution": "SELECT title FROM movies\nWHERE year < 2000 OR year > 2010;",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query",
+       "data": null
+      }
+     ]
+    },
+    {
+     "text": "Find the first 5 Pixar movies and their release <code>year</code>",
+     "hint_text": "Check the <code>year</code>",
+     "userSolution": "SELECT title, year FROM movies\nWHERE year <= 2003;",
+     "solution": "SELECT title FROM movies\nWHERE year <= 2003;",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query",
+       "data": null
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "lesson:select_queries_with_constraints_pt_2": {
+  "slug": "select_queries_with_constraints_pt_2",
+  "kind": "lesson",
+  "title": "SQL Lesson 3: Queries with constraints (Pt. 2)",
+  "body": "<p>When writing <code>WHERE</code> clauses with columns containing text data, SQL supports a number of useful operators\nto do things like case-insensitive string comparison and wildcard pattern matching.  We show a few common\ntext-data specific operators below:</p>\n<div class=\"datatable\">\n    <table class=\"table table-striped table-condensed\">\n        <tr>\n            <td style=\"width: 15%; text-align: center;\">Operator</td>\n            <td style=\"width: 60%\">Condition</td>\n            <td>Example</td>\n        </tr>\n        <tr>\n            <td style=\"text-align: center;\">=</td>\n            <td>Case sensitive exact string comparison (<em>notice the single equals</em>)</td>\n            <td>col_name <span class=\"faux-keyword\">=</span> \"abc\"</td>\n        </tr>\n        <tr>\n            <td style=\"text-align: center;\">!= or &lt;&gt;</td>\n            <td>Case sensitive exact string inequality comparison</td>\n            <td>col_name <span class=\"faux-keyword\">!=</span> \"abcd\"</td>\n        </tr>\n        <tr>\n            <td style=\"text-align: center;\">LIKE</td>\n            <td>Case insensitive exact string comparison</td>\n            <td>col_name <span class=\"faux-keyword\">LIKE</span> \"ABC\"</td>\n        </tr>\n        <tr>\n            <td style=\"text-align: center;\">NOT LIKE</td>\n            <td>Case insensitive exact string inequality comparison</td>\n            <td>col_name <span class=\"faux-keyword\">NOT LIKE</span> \"ABCD\"</td>\n        </tr>\n        <tr>\n            <td style=\"text-align: center;\">%</td>\n            <td>Used anywhere in a string to match \n                a sequence of zero or more characters (only with LIKE or NOT LIKE)</td>\n            <td>col_name <span class=\"faux-keyword\">LIKE</span> \"%AT%\"<br/>\n                (matches \"<span class=\"uline\">AT</span>\", \"<span class=\"uline\">AT</span>TIC\", \"C<span class=\"uline\">AT</span>\" \n                    or even \"B<span class=\"uline\">AT</span>S\")</td>\n        </tr>\n        <tr>\n            <td style=\"text-align: center;\">_</td>\n            <td>Used anywhere in a string to match \n                a single character (only with LIKE or NOT LIKE)</td>\n            <td>col_name <span class=\"faux-keyword\">LIKE</span> \"AN_\"<br/>\n                (matches \"<span class=\"uline\">AN</span>D\", but not \"<span class=\"uline\">AN</span>\")</td>\n        </tr>\n        <tr>\n            <td style=\"text-align: center;\">IN (&hellip;)</td>\n            <td>String exists in a list</td>\n            <td>col_name <span class=\"faux-keyword\">IN</span> (\"A\", \"B\", \"C\")</td>\n        </tr>\n        <tr>\n            <td style=\"text-align: center;\">NOT IN (&hellip;)</td>\n            <td>String does not exist in a list</td>\n            <td>col_name <span class=\"faux-keyword\">NOT IN</span> (\"D\", \"E\", \"F\")</td>\n        </tr>\n    </table>\n</div>\n\n<div class=\"dyk\">\n    <div class=\"desc\">Did you know?</div>\n    <p>\n    All strings must be quoted so that the query parser can distinguish words in the string from SQL keywords.\n    </p>\n</div>\n\n<p>We should note that while most database implementations are quite efficient when using these operators, \nfull-text search is best left to dedicated libraries like <a href=\"http://lucene.apache.org/\" title=\"Apache Lucene\">Apache Lucene</a> \nor <a href=\"http://sphinxsearch.com/\" title=\"Sphinx Search\">Sphinx</a>. These libraries are designed specifically to \ndo full text search, and as a result are more efficient and can support a wider variety of search \nfeatures including internationalization and advanced queries.</p>\n<h1>Exercise</h1>\n<p>Here's the definition of a query with a <code>WHERE</code> clause again, go ahead and try and write some queries\nwith the operators above to limit the results to the information we need in the tasks below.</p>\n<div class=\"definition\">\n    <div class=\"desc\">Select query with constraints</div>\n    <code class=\"sql\">SELECT column, another_column, &hellip;\nFROM mytable\n<strong>WHERE <i>condition</i>\n    AND/OR <i>another_condition</i>\n    AND/OR &hellip;</strong>;</code>\n</div>",
+  "exercise": {
+   "tasks_title": "Exercise 3",
+   "database": "pixar.js",
+   "targetDatatableId": "movies",
+   "inputDefaultQuery": "SELECT * FROM movies;",
+   "inputDefaultQuerySelection": [
+    20,
+    20
+   ],
+   "datatable": {
+    "movies": {
+     "preloadTableQuery": "INSERT INTO movies VALUES (87, \"WALL-G\", \"Brenda Chapman\", 2042, 97);",
+     "defaultQuery": "SELECT * FROM movies;"
+    }
+   },
+   "tasks": [
+    {
+     "text": "Find all the Toy Story movies",
+     "userSolution": "SELECT title, director FROM movies \nWHERE title LIKE \"Toy Story%\";",
+     "solution": "SELECT title FROM movies \nWHERE title LIKE \"Toy Story%\";",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query",
+       "data": null
+      }
+     ]
+    },
+    {
+     "text": "Find all the movies directed by John Lasseter",
+     "userSolution": "SELECT title, director FROM movies \nWHERE director = \"John Lasseter\";",
+     "solution": "SELECT title FROM movies \nWHERE director = \"John Lasseter\";",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query",
+       "data": null
+      }
+     ]
+    },
+    {
+     "text": "Find all the movies (and director) not directed by John Lasseter",
+     "userSolution": "SELECT title, director FROM movies \nWHERE director != \"John Lasseter\";",
+     "solution": "SELECT title FROM movies \nWHERE director != \"John Lasseter\";",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query",
+       "data": null
+      }
+     ]
+    },
+    {
+     "text": "Find all the WALL-* movies",
+     "userSolution": "SELECT * FROM movies \nWHERE title LIKE \"WALL-_\";",
+     "solution": "SELECT title FROM movies \nWHERE title LIKE \"WALL-_\";",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query",
+       "data": null
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "lesson:select_queries_with_expressions": {
+  "slug": "select_queries_with_expressions",
+  "kind": "lesson",
+  "title": "SQL Lesson 9: Queries with expressions",
+  "body": "<p>In addition to querying and referencing raw column data with SQL, you can also use <i>expressions</i> \nto write more complex logic on column values in a query.  These expressions can use mathematical \nand string functions along with basic arithmetic to transform values when the query is executed, \nas shown in this physics example.</p>\n<div class=\"definition\">\n    <div class=\"desc\">Example query with expressions</div>\n    <code class=\"sql\">SELECT <strong>particle_speed / 2.0</strong> AS half_particle_speed\nFROM physics_data\nWHERE <strong>ABS(particle_position) * 10.0 &gt; 500</strong>;</code>\n</div>\n\n<p>Each database has its own supported set of mathematical, string, and date functions that can be used\nin a query, which you can find in their own respective docs.</p>\n<p>The use of expressions can save time and extra post-processing of the result data, but can also make \nthe query harder to read, so we recommend that when expressions are used in the <code>SELECT</code> part of the \nquery, that they are also given a descriptive <i>alias</i> using the <code>AS</code> keyword.</p>\n<div class=\"definition\">\n    <div class=\"desc\">Select query with expression aliases</div>\n    <code class=\"sql\">SELECT <strong><i>col_expression</i> AS <i>expr_description</i></strong>, &hellip;\nFROM mytable;</code>\n</div>\n\n<p>In addition to expressions, regular columns and even tables can also have aliases to make them easier\nto reference in the output and as a part of simplifying more complex queries.</p>\n<div class=\"definition\">\n    <div class=\"desc\">Example query with both column and table name aliases</div>\n    <code class=\"sql\">SELECT column <strong>AS better_column_name</strong>, &hellip;\nFROM a_long_widgets_table_name <strong>AS mywidgets</strong>\nINNER JOIN widget_sales\n  ON mywidgets.id = widget_sales.widget_id;</code>\n</div>\n\n<h1>Exercise</h1>\n<p>You are going to have to use expressions to transform the <strong>BoxOffice</strong> data into something easier to \nunderstand for the tasks below.</p>",
+  "exercise": {
+   "tasks_title": "Exercise 9",
+   "database": "pixar.js",
+   "is_two_up": true,
+   "targetDatatableId": "_result",
+   "inputDefaultQuery": "SELECT * FROM movies;",
+   "inputDefaultQuerySelection": [
+    20,
+    20
+   ],
+   "datatable": {
+    "_tables": [
+     "movies",
+     "boxoffice"
+    ],
+    "_result": {
+     "defaultQuery": "SELECT * FROM movies;"
+    },
+    "movies": {
+     "defaultQuery": "SELECT * FROM movies;"
+    },
+    "boxoffice": {
+     "defaultQuery": "SELECT * FROM boxoffice;"
+    }
+   },
+   "tasks": [
+    {
+     "text": "List all movies and their combined sales in <strong>millions</strong> of dollars",
+     "hint_text": "They are currently saved in the database in dollars",
+     "solution": "SELECT title, (domestic_sales + international_sales) / 1000000 AS gross_sales_millions\nFROM movies\n  JOIN boxoffice\n    ON movies.id = boxoffice.movie_id;",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query",
+       "data": null
+      }
+     ]
+    },
+    {
+     "text": "List all movies and their ratings <strong>in percent</strong>",
+     "hint_text": "You will have to ROUND() your rating to the next closes integer.",
+     "solution": "SELECT title, rating * 10 AS rating_percent\nFROM movies\n  JOIN boxoffice\n    ON movies.id = boxoffice.movie_id;",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query",
+       "data": null
+      }
+     ]
+    },
+    {
+     "text": "List all movies that were released on even number years",
+     "hint_text": "Use the modulo (%) to determine if the year is even.",
+     "userSolution": "SELECT title, year\nFROM movies\nWHERE year % 2 = 0;",
+     "solution": "SELECT title\nFROM movies\nWHERE year % 2 = 0;",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query",
+       "data": null
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "lesson:select_queries_with_joins": {
+  "slug": "select_queries_with_joins",
+  "kind": "lesson",
+  "title": "SQL Lesson 6: Multi-table queries with JOINs",
+  "body": "<p>Up to now, we've been working with a single table, but entity data in the real world is often broken\ndown into pieces and stored across multiple orthogonal tables using a process known as <i>normalization</i><sup><a href=\"http://en.wikipedia.org/wiki/Database_normalization\" title=\"Database normalization\">[1]</a></sup>. </p>\n<h1>Database normalization</h1>\n<p>Database normalization is useful because it minimizes duplicate data in any single table, and allows \nfor data in the database to grow independently of each other (ie. Types of car engines can grow \nindependent of each type of car).  As a trade-off, queries get slightly more complex since they have\nto be able to find data from different parts of the database, and performance issues can arise when \nworking with many large tables.</p>\n<p>In order to answer questions about an entity that has data spanning multiple tables in a normalized \ndatabase, we need to learn how to write a query that can combine all that data and pull out exactly \nthe information we need.</p>\n<h1>Multi-table queries with JOINs</h1>\n<p>Tables that share information about a single entity need to have a <i>primary key</i> that identifies \nthat entity <i>uniquely</i> across the database.  One common primary key type is an auto-incrementing \ninteger (because they are space efficient), but it can also be a string, hashed value, so long as it\nis unique.</p>\n<p>Using the <code>JOIN</code> clause in a query, we can combine row data across two separate tables using this \nunique key.  The first of the joins that we will introduce is the <code>INNER JOIN</code>.</p>\n<div class=\"definition\">\n    <div class=\"desc\">Select query with INNER JOIN on multiple tables</div>\n    <code class=\"sql\">SELECT column, another_table_column, &hellip;\nFROM mytable\n<strong>INNER JOIN another_table \n    ON mytable.id = another_table.id</strong>\nWHERE <i>condition(s)</i>\nORDER BY column, &hellip; ASC/DESC\nLIMIT num_limit OFFSET num_offset;</code>\n</div>\n\n<p>The <code>INNER JOIN</code> is a process that matches rows from the first table and the second table which have \nthe same key (as defined by the <code>ON</code> constraint) to create a result row with the combined columns\nfrom both tables.  After the tables are joined, the other clauses we learned previously are then \napplied.</p>\n<div class=\"dyk\">\n    <div class=\"desc\">Did you know?</div>\n    <p>\n    You might see queries where the <code>INNER JOIN</code> is written simply as a <code>JOIN</code>.  \n    These two are equivalent, but we will continue to refer to these joins as inner-joins because they \n    make the query easier to read once you start using other types of joins, which will be introduced \n    in the following lesson.\n    </p>\n</div>\n\n<h1>Exercise</h1>\n<p>We've added a new table to the Pixar database so that you can try practicing some joins. The <strong>BoxOffice</strong> \ntable stores information about the ratings and sales of each particular Pixar movie, and the <em>Movie_id</em> \ncolumn in that table corresponds with the <em>Id</em> column in the <strong>Movies</strong> table 1-to-1.  Try and solve\nthe tasks below using the <code>INNER JOIN</code> introduced above.</p>",
+  "exercise": {
+   "tasks_title": "Exercise 6",
+   "database": "pixar.js",
+   "is_two_up": true,
+   "targetDatatableId": "_result",
+   "inputDefaultQuery": "SELECT * FROM movies;",
+   "inputDefaultQuerySelection": [
+    20,
+    20
+   ],
+   "datatable": {
+    "_tables": [
+     "movies",
+     "boxoffice"
+    ],
+    "_result": {
+     "defaultQuery": "SELECT * FROM movies;"
+    },
+    "movies": {
+     "defaultQuery": "SELECT * FROM movies;"
+    },
+    "boxoffice": {
+     "defaultQuery": "SELECT * FROM boxoffice;"
+    }
+   },
+   "tasks": [
+    {
+     "text": "Find the domestic and international sales for each movie",
+     "solution": "SELECT title, domestic_sales, international_sales \nFROM movies\n  JOIN boxoffice\n    ON movies.id = boxoffice.movie_id;",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query",
+       "data": null
+      }
+     ]
+    },
+    {
+     "text": "Show the sales numbers for each movie that did better internationally rather than domestically",
+     "solution": "SELECT title, domestic_sales, international_sales\nFROM movies\n  JOIN boxoffice\n    ON movies.id = boxoffice.movie_id\nWHERE international_sales > domestic_sales;",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query",
+       "data": null
+      },
+      {
+       "type": "row_col_val_greather_than_or_equal",
+       "data": {
+        "column_a": "international_sales",
+        "column_b": "domestic_sales"
+       }
+      }
+     ]
+    },
+    {
+     "text": "List all the movies by their ratings in descending order",
+     "userSolution": "SELECT title, rating\nFROM movies\n  JOIN boxoffice\n    ON movies.id = boxoffice.movie_id\nORDER BY rating DESC;",
+     "solution": "SELECT title\nFROM movies\n  JOIN boxoffice\n    ON movies.id = boxoffice.movie_id\nORDER BY rating DESC;",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query_ordered",
+       "data": null
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "lesson:select_queries_with_nulls": {
+  "slug": "select_queries_with_nulls",
+  "kind": "lesson",
+  "title": "SQL Lesson 8: A short note on NULLs",
+  "body": "<p>As promised in the last lesson, we are going to quickly talk about <code>NULL</code> values in an SQL database.\nIt's always good to reduce the possibility of <code>NULL</code> values in databases because they require special\nattention when constructing queries, constraints (certain functions behave differently with null values)\nand when processing the results.  </p>\n<p>An alternative to <code>NULL</code> values in your database is to have <em>data-type appropriate default values</em>, like \n0 for numerical data, empty strings for text data, etc.  But if your database needs to store incomplete \ndata, then <code>NULL</code> values can be appropriate if the default values will skew later analysis (for example, \nwhen taking averages of numerical data).</p>\n<p>Sometimes, it's also not possible to avoid <code>NULL</code> values, as we saw in the last lesson when outer-joining\ntwo tables with asymmetric data.  In these cases, you can test a column for <code>NULL</code> values in a <code>WHERE</code>\nclause by using either the <code>IS NULL</code> or <code>IS NOT NULL</code> constraint.</p>\n<div class=\"definition\">\n    <div class=\"desc\">Select query with constraints on NULL values</div>\n    <code class=\"sql\">SELECT column, another_column, &hellip;\nFROM mytable\n<strong>WHERE column IS/IS NOT NULL</strong>\nAND/OR <i>another_condition</i>\nAND/OR &hellip;;</code>\n</div>\n\n<h1>Exercise</h1>\n<p>This exercise will be a sort of review of the last few lessons.  We're using the same <strong>Employees</strong> and\n<strong>Buildings</strong> table from the last lesson, but we've hired a few more people, who haven't yet been assigned\na building.</p>",
+  "exercise": {
+   "tasks_title": "Exercise 8",
+   "database": "misc.js",
+   "is_two_up": true,
+   "targetDatatableId": "_result",
+   "inputDefaultQuery": "SELECT * FROM employees;",
+   "inputDefaultQuerySelection": [
+    20,
+    20
+   ],
+   "datatable": {
+    "_tables": [
+     "buildings",
+     "employees"
+    ],
+    "_result": {
+     "preloadTableQuery": "insert into employees (role, name, building, years_employed) values (\"Engineer\", \"Yancy I.\", NULL, 0);\n   insert into employees (role, name, building, years_employed) values (\"Artist\", \"Oliver P.\", NULL, 0);",
+     "defaultQuery": "SELECT * FROM employees;"
+    },
+    "buildings": {
+     "defaultQuery": "SELECT * FROM buildings;"
+    },
+    "employees": {
+     "defaultQuery": "SELECT * FROM employees;"
+    }
+   },
+   "tasks": [
+    {
+     "text": "Find the name and role of all employees who have not been assigned to a building",
+     "hint_text": "The <strong>Building</strong> for the employee will have a NULL value.",
+     "solution": "SELECT name, role FROM employees\nWHERE building IS NULL;",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query",
+       "data": null
+      }
+     ]
+    },
+    {
+     "text": "Find the names of the buildings that hold no employees",
+     "hint_text": "Find the Employee roles in each building (like the last lesson), the buildings without employees will have NULL roles.",
+     "solution": "SELECT DISTINCT building_name\nFROM buildings \n  LEFT JOIN employees\n    ON building_name = building\nWHERE role IS NULL;",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query",
+       "data": null
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "lesson:select_queries_with_outer_joins": {
+  "slug": "select_queries_with_outer_joins",
+  "kind": "lesson",
+  "title": "SQL Lesson 7: OUTER JOINs",
+  "body": "<p>Depending on how you want to analyze the data, the <code>INNER JOIN</code> we used last lesson might not be \nsufficient because the resulting table only contains data that belongs in both of the tables.</p>\n<p>If the two tables have asymmetric data, which can easily happen when data is entered in different\nstages, then we would have to use a <code>LEFT JOIN</code>, <code>RIGHT JOIN</code> or <code>FULL JOIN</code> instead to ensure that \nthe data you need is not left out of the results.</p>\n<div class=\"definition\">\n    <div class=\"desc\">Select query with LEFT/RIGHT/FULL JOINs on multiple tables</div>\n    <code class=\"sql\">SELECT column, another_column, &hellip;\nFROM mytable\n<strong>INNER/LEFT/RIGHT/FULL JOIN another_table \n    ON mytable.id = another_table.matching_id</strong>\nWHERE <i>condition(s)</i>\nORDER BY column, &hellip; ASC/DESC\nLIMIT num_limit OFFSET num_offset;</code>\n</div>\n\n<p>Like the <code>INNER JOIN</code> these three new joins have to specify which column to join the data on.<br />\nWhen joining table A to table B, a <code>LEFT JOIN</code> simply includes rows from A regardless of whether \na matching row is found in B.  The <code>RIGHT JOIN</code> is the same, but reversed, keeping rows in B \nregardless of whether a match is found in A.  Finally, a <code>FULL JOIN</code> simply means that rows from \nboth tables are kept, regardless of whether a matching row exists in the other table.</p>\n<p>When using any of these new joins, you will likely have to write additional logic to deal with <code>NULL</code>s\nin the result and constraints (more on this in the next lesson).</p>\n<div class=\"dyk\">\n    <div class=\"desc\">Did you know?</div>\n    <p>\n    You might see queries with these joins written as <code>LEFT OUTER JOIN</code>, \n    <code>RIGHT OUTER JOIN</code>, or <code>FULL OUTER JOIN</code>, but the <code>OUTER</code> \n    keyword is really kept for SQL-92 compatibility and these queries are simply equivalent to \n    <code>LEFT JOIN</code>, <code>RIGHT JOIN</code>, and <code>FULL JOIN</code> respectively.\n    </p>\n</div>\n\n<h1>Exercise</h1>\n<p>In this exercise, you are going to be working with a new table which stores fictional data about <strong>Employees</strong> \nin the film studio and their assigned office <strong>Buildings</strong>. Some of the buildings are new, so they \ndon't have any employees in them yet, but we need to find some information about them regardless.</p>\n<p>Since our browser SQL database is somewhat limited, only the <code>LEFT JOIN</code> is supported in the \nexercise below.</p>",
+  "exercise": {
+   "tasks_title": "Exercise 7",
+   "database": "misc.js",
+   "is_two_up": true,
+   "targetDatatableId": "_result",
+   "inputDefaultQuery": "SELECT * FROM employees;",
+   "inputDefaultQuerySelection": [
+    20,
+    20
+   ],
+   "datatable": {
+    "_tables": [
+     "buildings",
+     "employees"
+    ],
+    "_result": {
+     "defaultQuery": "SELECT * FROM employees;"
+    },
+    "buildings": {
+     "defaultQuery": "SELECT * FROM buildings;"
+    },
+    "employees": {
+     "defaultQuery": "SELECT * FROM employees;"
+    }
+   },
+   "tasks": [
+    {
+     "text": "Find the list of all buildings that have employees",
+     "solution": "SELECT DISTINCT building FROM employees;",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query",
+       "data": null
+      }
+     ]
+    },
+    {
+     "text": "Find the list of all buildings and their capacity",
+     "solution": "SELECT * FROM buildings;",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query",
+       "data": null
+      }
+     ]
+    },
+    {
+     "text": "List all buildings and the distinct employee roles in each building (including empty buildings)",
+     "hint_text": "Try using a left join from the buildings to the employees table.",
+     "solution": "SELECT DISTINCT building_name, role \nFROM buildings \n  LEFT JOIN employees\n    ON building_name = building;",
+     "checks": [
+      {
+       "type": "row_col_val_solution_query",
+       "data": null
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "lesson:updating_rows": {
+  "slug": "updating_rows",
+  "kind": "lesson",
+  "title": "SQL Lesson 14: Updating rows",
+  "body": "<p>In addition to adding new data, a common task is to update existing data, which can be done using an \n<code>UPDATE</code> statement.  Similar to the <code>INSERT</code> statement, you have to specify exactly which table,\ncolumns, and rows to update.  In addition, the data you are updating has to match the data type of \nthe columns in the table schema.</p>\n<div class=\"definition\">\n    <div class=\"desc\">Update statement with values</div>\n    <code class=\"sql\">UPDATE mytable\nSET column = value_or_expr, \n    other_column = another_value_or_expr, \n    &hellip;\nWHERE condition;</code>\n</div>\n\n<p>The statement works by taking multiple column/value pairs, and applying those changes to each and \nevery row that satisfies the constraint in the <code>WHERE</code> clause.</p>\n<h1>Taking care</h1>\n<p>Most people working with SQL <strong>will</strong> make mistakes updating data at one point or another.  Whether it's \nupdating the wrong set of rows in a production database, or accidentally leaving out the <code>WHERE</code> \nclause (which causes the update to apply to <i>all</i> rows), you need to be extra careful when \nconstructing <code>UPDATE</code> statements.</p>\n<p>One helpful tip is to always write the constraint first and test it in a <code>SELECT</code> query to make sure \nyou are updating the right rows, and only then writing the column/value pairs to update.</p>\n<h1>Exercise</h1>\n<p>It looks like some of the information in our <strong>Movies</strong> database might be incorrect, so go ahead and\nfix them through the exercises below.</p>",
+  "exercise": {
+   "tasks_title": "Exercise 14",
+   "database": "pixar.js",
+   "manualSubmit": true,
+   "targetDatatableId": "movies",
+   "inputDefaultQuery": "SELECT * FROM movies;",
+   "inputDefaultQuerySelection": [
+    0,
+    999
+   ],
+   "datatable": {
+    "movies": {
+     "preloadTableQuery": "UPDATE movies SET director = \"El Directore\" WHERE id = 2;\nUPDATE movies SET year = 1899 WHERE id = 3;\nUPDATE movies set title = \"Toy Story 8\", director = \"El Directore\" WHERE id = 11;",
+     "defaultQuery": "SELECT * FROM movies;"
+    }
+   },
+   "tasks": [
+    {
+     "text": "The director for A Bug's Life is incorrect, it was actually directed by <strong>John Lasseter</strong>",
+     "postValidateAction": {
+      "resultQuery": "SELECT * FROM movies;",
+      "message": "Row(s) updated"
+     },
+     "solution": "UPDATE movies\nSET director = \"John Lasseter\"\nWHERE id = 2;",
+     "checks": [
+      {
+       "type": "row_count_query_range",
+       "data": {
+        "query": "SELECT * FROM movies \nWHERE director = \"John Lasseter\";",
+        "minCount": 5,
+        "maxCount": 5
+       }
+      },
+      {
+       "type": "row_count_query_range",
+       "data": {
+        "query": "SELECT * FROM movies \nWHERE id = 2 AND director = \"John Lasseter\";",
+        "minCount": 1,
+        "maxCount": 1
+       }
+      }
+     ]
+    },
+    {
+     "text": "The year that Toy Story 2 was released is incorrect, it was actually released in <strong>1999</strong>",
+     "postValidateAction": {
+      "resultQuery": "SELECT * FROM movies;",
+      "message": "Row(s) updated"
+     },
+     "solution": "UPDATE movies\nSET year = 1999\nWHERE id = 3;",
+     "checks": [
+      {
+       "type": "row_count_query_range",
+       "data": {
+        "query": "SELECT * FROM movies \nWHERE id = 3 AND year = 1999;",
+        "minCount": 1,
+        "maxCount": 1
+       }
+      }
+     ]
+    },
+    {
+     "text": "Both the title and director for Toy Story 8 is incorrect!  The title should be \"Toy Story 3\" and it was directed by <strong>Lee Unkrich</strong>",
+     "postValidateAction": {
+      "resultQuery": "SELECT * FROM movies;",
+      "message": "Row(s) updated"
+     },
+     "solution": "UPDATE movies\nSET title = \"Toy Story 3\", director = \"Lee Unkrich\"\nWHERE id = 11;",
+     "checks": [
+      {
+       "type": "row_count_query_range",
+       "data": {
+        "query": "SELECT * FROM movies \nWHERE id = 11 AND title = \"Toy Story 3\" AND director = \"Lee Unkrich\";",
+        "minCount": 1,
+        "maxCount": 1
+       }
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "topic:introduction": {
+  "slug": "introduction",
+  "kind": "topic",
+  "title": "Intermediate SQL Topics",
+  "body": "<p>Before we get started, if you haven't yet completed our <a href=\"/lesson\" title=\"Interactive Tutorial: Learn to use SQL\">Interactive Tutorial</a>\nor still don't feel comfortable with SQL, please complete that before continuing.  The following deep-dive topics \nwill be building on the foundation from the lessons in the tutorial by exploring more advanced SQL \nconstructs that you might find useful when dealing with real-world data.</p>\n<h1>Core SQL</h1>\n<p><ol class=\"topic_list\" style=\"margin-left: 0em; font-size: 1.125em;\">\n    <li><a href=\"/topic/subqueries\" alt=\"Subqueries\">Subqueries</a></li>\n    <li><a href=\"/topic/set_operations\" alt=\"Set operations\">Set operations</a></li>\n    <li><i>Coming soon: Foreign Keys, Dates and Times, Views, and more.</i></li>\n</ol></p>",
+  "exercise": null
+ },
+ "topic:set_operations": {
+  "slug": "set_operations",
+  "kind": "topic",
+  "title": "SQL Topic: Unions, Intersections & Exceptions",
+  "body": "<p>When working with multiple tables, the <code>UNION</code> and <code>UNION ALL</code> operator allows you to append the results\nof one query to another assuming that they have the same column count, order and data type.  If you use \nthe <code>UNION</code> without the <code>ALL</code>, duplicate rows between the tables will be removed from the result.</p>\n<div class=\"definition\">\n    <div class=\"desc\">Select query with set operators</div>\n    <code class=\"sql\">SELECT column, another_column\n   FROM mytable\n<strong>UNION / UNION ALL / INTERSECT / EXCEPT\nSELECT other_column, yet_another_column\n   FROM another_table</strong>\nORDER BY column DESC\nLIMIT <i>n</i>;</code>\n</div>\n\n<p>In the order of operations as defined in <a href=\"/lesson/select_queries_order_of_execution\" title=\"SQL Lesson 12: Order of execution\">Lesson 12: Order of execution</a>,\nthe <code>UNION</code> happens before the <code>ORDER BY</code> and <code>LIMIT</code>.  It's not common to use <code>UNION</code>s, but if you \nhave data in different tables that can't be joined and processed, it can be an alternative to making\nmultiple queries on the database.</p>\n<p>Similar to the <code>UNION</code>, the <code>INTERSECT</code> operator will ensure that only rows that are identical in both\nresult sets are returned, and the <code>EXCEPT</code> operator will ensure that only rows in the first result set\nthat aren't in the second are returned.  This means that the <code>EXCEPT</code> operator is query order-sensitive,\nlike the <code>LEFT JOIN</code> and <code>RIGHT JOIN</code>.</p>\n<p>Both <code>INTERSECT</code> and <code>EXCEPT</code> also discard duplicate rows after their respective operations, though \nsome databases also support <code>INTERSECT ALL</code> and <code>EXCEPT ALL</code> to allow duplicates to be retained\nand returned.</p>",
+  "exercise": null
+ },
+ "topic:subqueries": {
+  "slug": "subqueries",
+  "kind": "topic",
+  "title": "SQL Topic: Subqueries",
+  "body": "<p>You might have noticed that even with a complete query, there are many questions that we can't answer\nabout our data without additional post, or pre, processing.  In these cases, you can either make multiple\nqueries and process the data yourself, or you can build a more complex query using SQL subqueries.</p>\n<div class=\"dyk\">\n    <div class=\"desc\">Example: General subquery</div>\n    <p>\n        Lets say your company has a list of all Sales Associates, with data on the revenue that each\n        Associate brings in, and their individual salary.  Times are tight, and you now want to find out\n        which of your Associates are costing the company more than the average revenue brought per\n        Associate.\n    </p>\n    <p>\n        First, you would need to calculate the average revenue all the Associates are generating:\n    </p>\n    <p>\n        <code class=\"sql\">SELECT AVG(revenue_generated)\nFROM sales_associates;</code>\n    </p>\n    <p>\n        And then using that result, we can then compare the costs of each of the Associates against \n        that value.  To use it as a subquery, we can just write it straight into the <code>WHERE</code> clause \n        of the query:\n    </p>\n    <p>\n        <code class=\"sql\">SELECT *\nFROM sales_associates\nWHERE salary > \n   <strong>(SELECT AVG(revenue_generated)\n    FROM sales_associates)</strong>;</code>\n    </p>\n    <p>\n        As the constraint is executed, each Associate's salary will be tested against the value queried\n        from the inner subquery.\n    </p>\n</div>\n\n<p>A subquery can be referenced anywhere a normal table can be referenced. Inside a <code>FROM</code> clause, you can \n<code>JOIN</code> subqueries with other tables, inside a <code>WHERE</code> or <code>HAVING</code> constraint, you can test expressions\nagainst the results of the subquery, and even in expressions in the <code>SELECT</code> clause, which allow you to \nreturn data directly from the subquery.  They are generally executed in the same logical order as the \npart of the query that they appear in, as described in the last lesson.</p>\n<p>Because subqueries can be nested, each subquery must be fully enclosed in parentheses in order \nto establish proper hierarchy.  Subqueries can otherwise reference any tables in the database, and make \nuse of the constructs of a normal query (though some implementations don't allow subqueries to use \n<code>LIMIT</code> or <code>OFFSET</code>).</p>\n<h1>Correlated subqueries</h1>\n<p>A more powerful type of subquery is the <i>correlated subquery</i> in which the inner query references,\nand is dependent on, a column or alias from the outer query.  Unlike the subqueries above, each of these\ninner queries need to be run for each of the rows in the outer query, since the inner query is \ndependent on the current outer query row.</p>\n<div class=\"dyk\">\n    <div class=\"desc\">Example: Correlated subquery</div>\n    <p>\n        Instead of the list of just Sales Associates above, imagine if you have a general list of \n        Employees, their departments (engineering, sales, etc.), revenue, and salary.  This time, \n        you are now looking across the company to find the employees who perform worse than average\n        in their department.\n    </p>\n    <p>\n        For each employee, you would need to calculate their cost relative to the average revenue \n        generated by all people in their department.  To take the average for the department, the \n        subquery will need to know what department each employee is in:\n    </p>\n    <p>\n        <code class=\"sql\">SELECT *\nFROM employees\nWHERE salary > \n   (SELECT AVG(revenue_generated)\n    FROM employees AS dept_employees\n    <strong>WHERE dept_employees.department = employees.department</strong>);</code>\n    </p>\n</div>\n\n<p>These kinds of complex queries can be powerful, but also difficult to read and understand, so you \nshould take care using them.  If possible, try and give meaningful aliases to the temporary values\nand tables.  In addition, correlated subqueries can be difficult to optimize, so performance \ncharacteristics may vary across different databases.</p>\n<h1>Existence tests</h1>\n<p>When we introduced <code>WHERE</code> constraints in <a href=\"/lesson/select_queries_with_constraints\" title=\"SQL Lesson 2: Queries with constraints\">Lesson 2: Queries with constraints</a>,\nthe <code>IN</code> operator was used to test whether the column value in the current row existed in a fixed\nlist of values.  In complex queries, this can be extended using subqueries to test whether a column\nvalue exists in a dynamic list of values.</p>\n<div class=\"definition\">\n    <div class=\"desc\">Select query with subquery constraint</div>\n    <code class=\"sql\">SELECT *, &hellip;\nFROM mytable\nWHERE column\n    <strong>IN/NOT IN</strong> (SELECT another_column\n               FROM another_table);</code>\n</div>\n\n<p>When doing this, notice that the inner subquery must select for a column value or expression to produce \na list that the outer column value can be tested against.  This type of constraint is powerful when\nthe constraints are based on current data.</p>",
+  "exercise": null
+ }
+}

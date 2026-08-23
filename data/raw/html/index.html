@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+<meta charset="utf-8">
+<meta http-equiv="x-ua-compatible" content="IE=Edge"/> 
+<meta name="application-name" content="SQLBolt - Learn SQL with simple, interactive exercises."/>
+<meta name="application-url" content="https://sqlbolt.com"/>
+<meta name="created" content="2015-04-01"/>
+<meta name="description" content="SQLBolt provides a set of interactive lessons and exercises to help you learn SQL"/>
+<meta name="keywords" content="sql,mysql,sqlite,postgres,javascript,learn,tutorial,interactive,lessons,"/>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link type="image/png" href="/cs/images/favicon.png" rel="icon">
+<title>SQLBolt - Learn SQL - Introduction to SQL</title>
+
+<!-- PREFETCH -->
+<link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
+<link rel="dns-prefetch" href="//fonts.googleapis.com">
+<link rel="dns-prefetch" href="//www.google-analytics.com">
+<link rel="dns-prefetch" href="//pagead2.googlesyndication.com">
+<link rel="dns-prefetch" href="//www.paypal.com">
+<link rel="dns-prefetch" href="//www.paypalobjects.com">
+<link rel="dns-prefetch" href="//connect.facebook.net">
+<link rel="dns-prefetch" href="//platform.twitter.com">
+<link rel="prefetch" href="/cs/js/sql_3.8.7.4.js">
+
+<!-- CSS -->
+<link type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+<link type="text/css" href="https://fonts.googleapis.com/css?family=Ruda:400,700" rel="stylesheet">
+<link type="text/css" href="/cs/css/main.min.css?version=68" rel="stylesheet">
+<style type="text/css">
+</style>
+</head>
+
+<!-- BODY -->
+<body class="">
+
+
+<div class="container">
+    <div class="row content">
+        <!-- NAV -->
+        <div class="header">
+            <a href="/" class="site_logo" title="Home">
+                <img src="/cs/images/favicon.png" alt="SQLBolt icon" />
+            </a>
+            <a href="/" class="site_name" title="Home">
+                <span>SQL<span class="highlight">Bolt</span></span><br/>
+                <span class="desc hide-max-md">Learn SQL with simple, interactive exercises.</span>
+            </a>
+            <div class="menu_buttons">
+                <a href="/lesson/introduction" class="menu_button lesson_button " title="Lessons menu">
+                    <img src="/cs/images/icon_tutorial.png" alt="Interactive Tutorial" /> <span class="hide-max-sm">Interactive</span> <span class="hide-max-xs">Tutorial</span>
+                </a>
+                <a href="/topic/introduction" class="menu_button topics_button " title="References &amp; More menu">
+                    <img src="/cs/images/icon_reference.png" alt="References &amp; More" /> <span class="hide-max-xs">More Topics</span></span>
+                </a>
+            </div>
+        </div>
+    
+        <!-- MENU -->
+        <div class="menu_container">
+            <div class="lesson_menu menu">
+                <div class="title">All Lessons</div>
+                    <a href="/lesson/introduction" class="active" title="Introduction to SQL">Introduction to SQL</a>
+                    <a href="/lesson/select_queries_introduction" class="" title="SQL Lesson 1: SELECT queries 101">SQL Lesson 1: SELECT queries 101</a>
+                    <a href="/lesson/select_queries_with_constraints" class="" title="SQL Lesson 2: Queries with constraints (Pt. 1)">SQL Lesson 2: Queries with constraints (Pt. 1)</a>
+                    <a href="/lesson/select_queries_with_constraints_pt_2" class="" title="SQL Lesson 3: Queries with constraints (Pt. 2)">SQL Lesson 3: Queries with constraints (Pt. 2)</a>
+                    <a href="/lesson/filtering_sorting_query_results" class="" title="SQL Lesson 4: Filtering and sorting Query results">SQL Lesson 4: Filtering and sorting Query results</a>
+                    <a href="/lesson/select_queries_review" class="" title="SQL Review: Simple SELECT Queries">SQL Review: Simple SELECT Queries</a>
+                    <a href="/lesson/select_queries_with_joins" class="" title="SQL Lesson 6: Multi-table queries with JOINs">SQL Lesson 6: Multi-table queries with JOINs</a>
+                    <a href="/lesson/select_queries_with_outer_joins" class="" title="SQL Lesson 7: OUTER JOINs">SQL Lesson 7: OUTER JOINs</a>
+                    <a href="/lesson/select_queries_with_nulls" class="" title="SQL Lesson 8: A short note on NULLs">SQL Lesson 8: A short note on NULLs</a>
+                    <a href="/lesson/select_queries_with_expressions" class="" title="SQL Lesson 9: Queries with expressions">SQL Lesson 9: Queries with expressions</a>
+                    <a href="/lesson/select_queries_with_aggregates" class="" title="SQL Lesson 10: Queries with aggregates (Pt. 1)">SQL Lesson 10: Queries with aggregates (Pt. 1)</a>
+                    <a href="/lesson/select_queries_with_aggregates_pt_2" class="" title="SQL Lesson 11: Queries with aggregates (Pt. 2)">SQL Lesson 11: Queries with aggregates (Pt. 2)</a>
+                    <a href="/lesson/select_queries_order_of_execution" class="" title="SQL Lesson 12: Order of execution of a Query">SQL Lesson 12: Order of execution of a Query</a>
+                    <a href="/lesson/inserting_rows" class="" title="SQL Lesson 13: Inserting rows">SQL Lesson 13: Inserting rows</a>
+                    <a href="/lesson/updating_rows" class="" title="SQL Lesson 14: Updating rows">SQL Lesson 14: Updating rows</a>
+                    <a href="/lesson/deleting_rows" class="" title="SQL Lesson 15: Deleting rows">SQL Lesson 15: Deleting rows</a>
+                    <a href="/lesson/creating_tables" class="" title="SQL Lesson 16: Creating tables">SQL Lesson 16: Creating tables</a>
+                    <a href="/lesson/altering_tables" class="" title="SQL Lesson 17: Altering tables">SQL Lesson 17: Altering tables</a>
+                    <a href="/lesson/dropping_tables" class="" title="SQL Lesson 18: Dropping tables">SQL Lesson 18: Dropping tables</a>
+                    <a href="/lesson/end" class="" title="SQL Lesson X: To infinity and beyond!">SQL Lesson X: To infinity and beyond!</a>
+            </div>
+            <div class="practice_menu menu">
+                <div class="title">Additional Topics</div>
+                    <a href="/topic/introduction" class="" title="Intermediate SQL Topics">Intermediate SQL Topics</a>
+                    <a href="/topic/subqueries" class="" title="SQL Topic: Subqueries">SQL Topic: Subqueries</a>
+                    <a href="/topic/set_operations" class="" title="SQL Topic: Unions, Intersections & Exceptions">SQL Topic: Unions, Intersections & Exceptions</a>
+            </div>
+        </div>
+
+        <!-- LESSON -->
+<div class="row">
+    <div class="col-xs-12 col-sm-12 col-md-9">
+        <!-- LESSON TITLE & BODY -->
+        <div class="lesson">
+            <div class="title">
+                Introduction to SQL
+            </div>
+            <div class="body">
+                <p>Welcome to SQLBolt, a series of interactive lessons and exercises designed to help you quickly 
+learn SQL right in your browser.</p>
+<h1>What is SQL?</h1>
+<p>SQL, or Structured Query Language, is a language designed to allow both technical and non-technical 
+users to query, manipulate, and transform data from a relational database.  And due to its simplicity, 
+SQL databases provide safe and scalable storage for millions of websites and mobile applications.</p>
+<div class="dyk">
+    <div class="desc">Did you know?</div>
+    <p>
+    There are many popular SQL databases including SQLite, MySQL, Postgres, Oracle and Microsoft 
+    SQL Server.  All of them support the common SQL language standard, which is what this site 
+    will be teaching, but each implementation can differ in the additional features and storage 
+    types it supports.
+    </p>
+</div>
+
+<h1>Relational databases</h1>
+<p>Before learning the SQL syntax, it's important to have a model for what a relational database actually 
+is.  A relational database represents a collection of related (two-dimensional) tables.  Each of the 
+tables are similar to an Excel spreadsheet, with a fixed number of named columns (the attributes or 
+properties of the table) and any number of rows of data.</p>
+<p>For example, if the Department of Motor Vehicles had a database, you might find a table containing 
+all the known vehicles that people in the state are driving.  This table might need to store the 
+model name, type, number of wheels, and number of doors of each vehicle for example.</p>
+<div class="datatable_title col-xs-12">
+    Table: Vehicles
+</div>
+
+<div class="datatable">
+    <table class="table table-striped table-condensed">
+        <tr>
+            <td class='column_name'>Id</td>
+            <td class='column_name'>Make/Model</td>
+            <td class='column_name'># Wheels</td>
+            <td class='column_name'># Doors</td>
+            <td class='column_name'>Type</td>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>Ford Focus</td>
+            <td>4</td>
+            <td>4</td>
+            <td>Sedan</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>Tesla Roadster</td>
+            <td>4</td>
+            <td>2</td>
+            <td>Sports</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>Kawakasi Ninja</td>
+            <td>2</td>
+            <td>0</td>
+            <td>Motorcycle</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>McLaren Formula 1</td>
+            <td>4</td>
+            <td>0</td>
+            <td>Race</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>Tesla S</td>
+            <td>4</td>
+            <td>4</td>
+            <td>Sedan</td>
+        </tr>
+    </table>
+</div>
+
+<p>In such a database, you might find additional related tables containing information such as a list 
+of all registered drivers in the state, the types of driving licenses that can be granted, or even 
+driving violations for each driver.</p>
+<p>By learning SQL, the goal is to learn how to answer specific questions about this data, like 
+<i>"What types of vehicles are on the road have less than four wheels?"</i>, or <i>"How many models 
+of cars does Tesla produce?"</i>, to help us make better decisions down the road.</p>
+<h1>About the lessons</h1>
+<p>Since most users will be learning SQL to interact with an existing database, the lessons begin by 
+introducing you to the various parts of an SQL query.  The later lessons will then show you how to
+alter a table (or schema) and create new tables from scratch.</p>
+<p>Each lesson will introduce a different concept and end with an interactive exercise.  Go at your 
+pace and don't be afraid to spend time experimenting with the exercises before continuing!  If
+you happen to be familiar with SQL already, you can skip ahead using the links in the top-right, 
+but we would recommend you work through the lessons anyways!</p>
+<p>By the end, we hope you will be able to have a strong foundation for using SQL in your own projects 
+and beyond. </p>
+<div style="margin: 1.5em 0 1em 0;">
+    <a href="/lesson/select_queries_introduction" class="btn btn-success" style="font-size: 1em; margin: -0.1em 0 0 0em; padding: 0.5em 0.6em 0.35em 0.6em;">Begin Lesson 1: Writing SQL Queries &rsaquo;</a>
+</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xs-12">
+
+    </div>
+</div>
+
+    </div>
+</div>
+
+<!-- GA -->
+<div class="row">
+<div class="col-xs-12 col-sm-8 col-sm-offset-2">
+<div class="ga">
+    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-4789820854456926"
+         data-ad-slot="9785164698"
+         data-ad-format="auto"></ins>
+</div>
+</div>
+</div>
+
+<!-- CR -->
+<div class="copyright container">
+    <div class="fb-like" data-href="http://sqlbolt.com" data-layout="button_count" data-action="like" data-show-faces="true" data-share="true"></div>
+    <div class="twitter-like" style="display: inline; position: relative; top: -3px;">
+        <a href="https://twitter.com/share" class="twitter-share-button" data-text="SQLBolt - Learn SQL with simple, interactive exercises." data-url="http://sqlbolt.com" data-via="SQLBolt"></a>
+    </div>
+    <div class="text">2024 &copy; SQLBolt<br/>
+        <a href="mailto:sqlbolt@gmail.com" title="SQLBolt Email">Email</a> |
+        <a href="http://twitter.com/sqlbolt" title="SQLBolt Twitter">Twitter</a>
+    </div>
+    <div class="text">Additional Courses<br/>
+        <a href="https://regexone.com" title="RegexOne">Interactive Regular Expressions Lessons</a>
+    </div>
+</div>
+
+<!-- PP -->
+<div class="paypal" style="visibility: hidden">
+<form id="paypal_form" action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="mosannona@gmail.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="item_name" value="SQLBolt Donation">
+<input type="hidden" name="amount" value="4.00">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_SM.gif:NonHostedGuest">
+<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" style="border: 0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+<img alt="" style="border: 0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+</form>
+</div>
+
+<!-- JS -->
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.5/highlight.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+<script type="text/javascript" src="/cs/js/main.min.js?version=68"></script>
+
+<!--[if lte IE 9]>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.2/html5shiv.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/respond.js/1.4.2/respond.min.js"></script>
+<script type="text/javascript">
+    var disableExercises = true; // :(
+</script>
+<![endif]-->
+
+<!-- GA -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-N78FPMW1QB"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-N78FPMW1QB');
+</script>
+
+<script type="text/javascript">
+	"use strict";
+
+    // Setup the exercises
+    var exerciseJson = null;
+
+    initializeDocumentLoad(exerciseJson, "lesson/0");
+    exerciseJson = null;
+</script>
+
+<!-- GA -->
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+
+<!-- FB -->
+<div id="fb-root"></div>
+<script>
+function showFacebookButton() {
+    (function(d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) return;
+        js = d.createElement(s); js.id = id;
+        js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.3&appId=221509137874176";
+        fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+}
+setTimeout(showFacebookButton, 1000);
+</script>
+
+<!-- TWITTER -->
+<script>
+function showTwitterButton() {
+    !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');
+}
+setTimeout(showTwitterButton, 500);
+</script>
+
+</body>
+
+</html>
