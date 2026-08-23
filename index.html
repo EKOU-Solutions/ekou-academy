@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SQL Total — Curso interactivo de SQL con Playground</title>
+<title>EKOU Academy — Curso interactivo de SQL con Playground</title>
 <meta name="description" content="Curso interactivo de SQL en español: consultas, JOINs, agregados, DML, DDL, vistas, índices, transacciones, CTEs, funciones de ventana, triggers, procedimientos almacenados y funciones. Incluye un playground SQL en el navegador.">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+<link rel="icon" type="image/svg+xml" href="assets/img/ekou-logo.svg">
 <link rel="stylesheet" href="assets/vendor/codemirror.css">
 <link rel="stylesheet" href="assets/vendor/cm-show-hint.css">
 <link rel="stylesheet" href="assets/css/styles.css">
@@ -13,30 +13,35 @@
 <body>
 
 <header class="topbar">
-  <button class="icon-btn nav-toggle" id="navToggle" aria-label="Abrir menú">☰</button>
+  <button class="icon-btn nav-toggle" id="navToggle" data-i18n-label="nav.menu" aria-label="Abrir menú">☰</button>
   <a class="brand" href="#/">
-    <span class="brand-mark">⚡</span>
-    <span class="brand-text">SQL<b>Total</b></span>
+    <img class="brand-mark" src="assets/img/ekou-logo.svg" alt="EKOU" width="41" height="43">
+    <span class="brand-text">EKOU <b>Academy</b></span>
   </a>
   <nav class="topnav">
-    <a href="#/" data-nav="curso">Curso</a>
-    <a href="#/referencia" data-nav="referencia">Referencia</a>
-    <a href="#/playground" data-nav="playground" class="cta">Playground</a>
+    <a href="#/" data-nav="curso" data-i18n="nav.course">Curso</a>
+    <a href="#/referencia" data-nav="referencia" data-i18n="nav.reference">Referencia</a>
+    <a href="#/playground" data-nav="playground" class="cta" data-i18n="nav.playground">Playground</a>
   </nav>
   <div class="topbar-right">
-    <span class="progress-pill" id="progressPill" title="Lecciones completadas">0 / 0</span>
-    <button class="icon-btn" id="themeToggle" aria-label="Cambiar tema">◐</button>
+    <span class="progress-pill" id="progressPill" data-i18n-title="nav.progress" title="Lecciones completadas">0 / 0</span>
+    <div class="lang-switch" id="langSwitch" role="group" data-i18n-label="nav.lang" aria-label="Idioma">
+      <button type="button" data-lang="es" lang="es">ES</button>
+      <button type="button" data-lang="en" lang="en">EN</button>
+    </div>
+    <button class="icon-btn" id="themeToggle" data-i18n-label="nav.theme" aria-label="Cambiar tema">◐</button>
   </div>
 </header>
 
 <div class="layout">
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-search">
-      <input type="search" id="lessonSearch" placeholder="Buscar tema… (/)" autocomplete="off">
+      <input type="search" id="lessonSearch" data-i18n-placeholder="search.placeholder"
+             placeholder="Buscar tema… (/)" autocomplete="off">
     </div>
     <div id="sidebarNav"></div>
     <div class="sidebar-foot">
-      <button class="linkish" id="resetProgress">Reiniciar progreso</button>
+      <button class="linkish" id="resetProgress" data-i18n="progress.reset">Reiniciar progreso</button>
     </div>
   </aside>
   <div class="sidebar-scrim" id="sidebarScrim"></div>
@@ -44,7 +49,7 @@
   <main class="main" id="main">
     <div class="loading-splash" id="splash">
       <div class="spinner"></div>
-      <p>Cargando motor SQLite…</p>
+      <p data-i18n="boot.loading">Cargando motor SQLite…</p>
     </div>
   </main>
 </div>
@@ -57,6 +62,7 @@
 <script src="assets/vendor/cm-matchbrackets.js"></script>
 <script src="assets/vendor/cm-placeholder.js"></script>
 
+<script src="assets/js/i18n.js"></script>
 <script src="data/datasets.js"></script>
 <script src="assets/js/registry.js"></script>
 
@@ -100,6 +106,16 @@
 <script src="data/lessons/37-performance.js"></script>
 <script src="data/lessons/35-security-users.js"></script>
 <script src="data/lessons/38-reference.js"></script>
+
+<script src="data/i18n/en-01-basics.js"></script>
+<script src="data/i18n/en-02-multitable.js"></script>
+<script src="data/i18n/en-03-dml-ddl.js"></script>
+<script src="data/i18n/en-04-intermediate.js"></script>
+<script src="data/i18n/en-05-functions.js"></script>
+<script src="data/i18n/en-06-objects.js"></script>
+<script src="data/i18n/en-07-programming.js"></script>
+<script src="data/i18n/en-08-design.js"></script>
+<script src="data/i18n/en-09-reference.js"></script>
 
 <script src="assets/js/engine.js"></script>
 <script src="assets/js/checker.js"></script>

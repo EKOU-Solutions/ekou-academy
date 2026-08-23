@@ -28,9 +28,9 @@
   /* La consulta del usuario debe contener, para cada columna de la solución,
      alguna columna con exactamente los mismos valores. Se permiten columnas extra. */
   function matchesSolution(userRes, solRes, ordered) {
-    if (!userRes || !userRes.columns) return { ok: false, reason: 'La consulta no ha devuelto ninguna tabla de resultados.' };
+    if (!userRes || !userRes.columns) return { ok: false, reason: I18N.t('chk.noResultTable') };
     if (userRes.values.length !== solRes.values.length) {
-      return { ok: false, reason: `Se esperaban ${solRes.values.length} fila(s) y la consulta ha devuelto ${userRes.values.length}.` };
+      return { ok: false, reason: I18N.t('chk.rowCount', { want: solRes.values.length, got: userRes.values.length }) };
     }
     const used = new Set();
     for (let j = 0; j < solRes.columns.length; j++) {
@@ -42,8 +42,7 @@
         if (ordered ? sameSequence(want, got) : sameMultiset(want, got)) { found = k; break; }
       }
       if (found === -1) {
-        return { ok: false, reason: `Falta una columna con los valores de <code>${solRes.columns[j]}</code>` +
-          (ordered ? ' en el orden correcto.' : '.') };
+        return { ok: false, reason: I18N.t(ordered ? 'chk.missingColumnOrdered' : 'chk.missingColumn', { col: solRes.columns[j] }) };
       }
       used.add(found);
     }
@@ -69,7 +68,7 @@
         try {
           solRes = Engine.query(db, task.solution);
         } catch (e) {
-          return { ok: false, reason: 'No se ha podido ejecutar la solución de referencia: ' + e.message };
+          return { ok: false, reason: I18N.t('chk.solutionFailed', { msg: e.message }) };
         }
         return matchesSolution(userRes, solRes, ordered);
       }
@@ -78,7 +77,7 @@
         const want = check.data.map(c => String(c).toLowerCase());
         const got = (userRes.columns || []).map(c => String(c).toLowerCase());
         if (want.length !== got.length || !want.every((c, i) => c === got[i])) {
-          return { ok: false, reason: `Se esperaban exactamente estas columnas: <code>${check.data.join(', ')}</code>.` };
+          return { ok: false, reason: I18N.t('chk.exactColumns', { cols: check.data.join(', ') }) };
         }
         return { ok: true };
       }
@@ -91,7 +90,7 @@
       case 'assert_query_fails': {
         try { Engine.query(db, check.data); }
         catch (e) { return { ok: true }; }
-        return { ok: false, reason: 'La comprobación esperaba que la consulta fallase y ha funcionado.', failQuery: check.failQuery };
+        return { ok: false, reason: I18N.t('chk.shouldHaveFailed'), failQuery: check.failQuery };
       }
 
       case 'row_count_query_range': {
@@ -100,10 +99,10 @@
         catch (e) { return { ok: false, reason: e.message }; }
         const n = res.values.length;
         if (check.data.maxCount != null && n > check.data.maxCount) {
-          return { ok: false, reason: `Todavía quedan ${n} fila(s) que deberían haber desaparecido.` };
+          return { ok: false, reason: I18N.t('chk.rowsLeft', { n }) };
         }
         if (check.data.minCount != null && n < check.data.minCount) {
-          return { ok: false, reason: `Se esperaban al menos ${check.data.minCount} fila(s) y hay ${n}.` };
+          return { ok: false, reason: I18N.t('chk.rowsExpected', { min: check.data.minCount, n }) };
         }
         return { ok: true };
       }
@@ -119,17 +118,17 @@
           return (d.ignoreCase ? v.toLowerCase() : v) === target;
         });
         return hit ? { ok: true }
-          : { ok: false, reason: `No se encuentra ninguna fila con <code>${d.column} = '${d.value}'</code> en <code>${d.table}</code>.` };
+          : { ok: false, reason: I18N.t('chk.rowMissing', { col: d.column, val: d.value, table: d.table }) };
       }
 
       case 'row_col_val_greather_than_or_equal': {
         const a = findCol(userRes, check.data.column_a);
         const b = findCol(userRes, check.data.column_b);
         if (a === -1 || b === -1) {
-          return { ok: false, reason: `El resultado debe incluir las columnas <code>${check.data.column_a}</code> y <code>${check.data.column_b}</code>.` };
+          return { ok: false, reason: I18N.t('chk.needColumns', { a: check.data.column_a, b: check.data.column_b }) };
         }
         const bad = userRes.values.some(r => Number(r[a]) < Number(r[b]));
-        return bad ? { ok: false, reason: `Hay filas donde <code>${check.data.column_a}</code> es menor que <code>${check.data.column_b}</code>.` } : { ok: true };
+        return bad ? { ok: false, reason: I18N.t('chk.notGreater', { a: check.data.column_a, b: check.data.column_b }) } : { ok: true };
       }
 
       /* --- comprobaciones añadidas para los temas nuevos --- */
@@ -141,7 +140,7 @@
         } catch (e) { return { ok: false, reason: e.message }; }
         return res.values.length
           ? { ok: true }
-          : { ok: false, reason: `No existe ning&uacute;n objeto de tipo <code>${check.data.type}</code> llamado <code>${check.data.name}</code>.` };
+          : { ok: false, reason: I18N.t('chk.objectMissing', { type: check.data.type, name: check.data.name }) };
       }
 
       case 'query_result_equals': {  // data: { query, columns?, values: [[...]] }
@@ -151,11 +150,11 @@
         const got = res.values.map(r => r.map(norm));
         const want = check.data.values.map(r => r.map(norm));
         if (got.length !== want.length) {
-          return { ok: false, reason: `La comprobación <code>${check.data.query}</code> esperaba ${want.length} fila(s) y ha obtenido ${got.length}.` };
+          return { ok: false, reason: I18N.t('chk.checkRowCount', { query: check.data.query, want: want.length, got: got.length }) };
         }
         for (let i = 0; i < want.length; i++) {
           if (!sameSequence(want[i], got[i])) {
-            return { ok: false, reason: `Fila ${i + 1} distinta de la esperada (esperado: <code>${want[i].join(' | ')}</code>).` };
+            return { ok: false, reason: I18N.t('chk.rowDiffers', { i: i + 1, want: want[i].join(' | ') }) };
           }
         }
         return { ok: true };
@@ -168,11 +167,11 @@
         const got = res.values.length ? norm(res.values[0][0]) : null;
         return got === norm(check.data.value)
           ? { ok: true }
-          : { ok: false, reason: `Se esperaba <code>${check.data.value}</code> y se ha obtenido <code>${got}</code>.` };
+          : { ok: false, reason: I18N.t('chk.scalarDiffers', { want: check.data.value, got }) };
       }
 
       default:
-        console.warn('Comprobación desconocida:', check.type);
+        console.warn('Unknown check type:', check.type);
         return { ok: true };
     }
   }
@@ -182,7 +181,7 @@
     const hay = sql.toLowerCase();
     for (const needle of list) {
       if (!hay.includes(String(needle).toLowerCase())) {
-        return { ok: false, reason: `La consulta debe usar <code>${needle}</code>.` };
+        return { ok: false, reason: I18N.t('chk.mustUse', { needle }) };
       }
     }
     return { ok: true };

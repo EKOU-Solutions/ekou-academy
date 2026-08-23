@@ -1,17 +1,18 @@
 /* Playground SQL: editor libre sobre SQLite en el navegador. */
 (function () {
   const { el, renderTable, makeEditor, toast, download, toCSV } = UI;
+  const t = (k, p) => I18N.t(k, p);
 
   const LS_SNIPPETS = 'sqltotal:snippets:v1';
   const LS_LAST = 'sqltotal:playground:last';
 
   const EJEMPLOS = [
-    { g: 'Básico', n: 'SELECT con filtro y orden', ds: 'tienda', sql:
+    { g: 'basic', n: 'ex.select', ds: 'tienda', sql:
 `SELECT nombre, precio, stock
 FROM productos
 WHERE descatalogado = 0 AND precio < 200
 ORDER BY precio DESC;` },
-    { g: 'Básico', n: 'JOIN de tres tablas', ds: 'tienda', sql:
+    { g: 'basic', n: 'ex.join3', ds: 'tienda', sql:
 `SELECT p.id AS pedido, c.nombre AS cliente, pr.nombre AS producto,
        d.cantidad, d.precio_unit
 FROM pedidos p
@@ -20,7 +21,7 @@ JOIN detalle_pedido d  ON d.pedido_id = p.id
 JOIN productos pr      ON pr.id = d.producto_id
 ORDER BY p.id
 LIMIT 20;` },
-    { g: 'Agregados', n: 'Facturación por categoría', ds: 'tienda', sql:
+    { g: 'agg', n: 'ex.revenue', ds: 'tienda', sql:
 `SELECT cat.nombre AS categoria,
        COUNT(DISTINCT p.id)                AS pedidos,
        SUM(d.cantidad)                     AS unidades,
@@ -33,7 +34,7 @@ WHERE p.estado <> 'cancelado'
 GROUP BY cat.nombre
 HAVING importe > 500
 ORDER BY importe DESC;` },
-    { g: 'Funciones', n: 'Funciones de fecha', ds: 'tienda', sql:
+    { g: 'fn', n: 'ex.dates', ds: 'tienda', sql:
 `SELECT id,
        fecha,
        strftime('%Y', fecha)          AS anio,
@@ -43,7 +44,7 @@ ORDER BY importe DESC;` },
 FROM pedidos
 ORDER BY fecha DESC
 LIMIT 10;` },
-    { g: 'Funciones', n: 'Funciones de ventana', ds: 'tienda', sql:
+    { g: 'fn', n: 'ex.window', ds: 'tienda', sql:
 `WITH ventas AS (
   SELECT pr.categoria_id, pr.nombre,
          SUM(d.cantidad * d.precio_unit) AS importe
@@ -59,7 +60,16 @@ SELECT c.nombre AS categoria, v.nombre AS producto,
 FROM ventas v
 JOIN categorias c ON c.id = v.categoria_id
 ORDER BY categoria, puesto;` },
-    { g: 'Funciones', n: 'Función definida por el usuario (JS)', ds: 'tienda', sql:
+    { g: 'fn', n: 'ex.udf', ds: 'tienda', sqlEn:
+`-- iva(), iniciales(), slugify() and distancia_km() are registered
+-- from JavaScript with db.create_function() in assets/js/engine.js
+SELECT nombre,
+       precio,
+       iva(precio)        AS precio_con_iva,
+       iva(precio, 0.10)  AS precio_iva_reducido,
+       slugify(nombre)    AS slug
+FROM productos
+LIMIT 10;`, sql:
 `-- iva(), iniciales(), slugify() y distancia_km() están registradas
 -- desde JavaScript con db.create_function() en assets/js/engine.js
 SELECT nombre,
@@ -69,7 +79,7 @@ SELECT nombre,
        slugify(nombre)    AS slug
 FROM productos
 LIMIT 10;` },
-    { g: 'Avanzado', n: 'CTE recursiva: jerarquía de empleados', ds: 'tienda', sql:
+    { g: 'adv', n: 'ex.cte', ds: 'tienda', sql:
 `WITH RECURSIVE arbol(id, nombre, puesto, jefe_id, nivel, ruta) AS (
     SELECT id, nombre, puesto, jefe_id, 0, nombre
     FROM empleados
@@ -82,7 +92,7 @@ LIMIT 10;` },
 SELECT nivel, printf('%*s%s', nivel * 3, '', nombre) AS organigrama, puesto, ruta
 FROM arbol
 ORDER BY ruta;` },
-    { g: 'Avanzado', n: 'Vista + índice + plan de ejecución', ds: 'tienda', sql:
+    { g: 'adv', n: 'ex.viewIndex', ds: 'tienda', sql:
 `CREATE VIEW IF NOT EXISTS v_totales_pedido AS
 SELECT p.id            AS pedido_id,
        p.cliente_id,
@@ -98,7 +108,18 @@ EXPLAIN QUERY PLAN
 SELECT * FROM pedidos WHERE cliente_id = 1 ORDER BY fecha;
 
 SELECT * FROM v_totales_pedido ORDER BY total DESC LIMIT 10;` },
-    { g: 'Avanzado', n: 'Transacción con SAVEPOINT', ds: 'tienda', sql:
+    { g: 'adv', n: 'ex.savepoint', ds: 'tienda', sqlEn:
+`BEGIN TRANSACTION;
+
+UPDATE productos SET precio = precio * 1.10 WHERE categoria_id = 2;
+
+SAVEPOINT antes_de_borrar;
+DELETE FROM productos WHERE stock = 0;
+ROLLBACK TO antes_de_borrar;   -- undoes only the DELETE
+
+COMMIT;
+
+SELECT id, nombre, precio, stock FROM productos WHERE categoria_id = 2 OR stock = 0;`, sql:
 `BEGIN TRANSACTION;
 
 UPDATE productos SET precio = precio * 1.10 WHERE categoria_id = 2;
@@ -110,7 +131,7 @@ ROLLBACK TO antes_de_borrar;   -- deshace solo el DELETE
 COMMIT;
 
 SELECT id, nombre, precio, stock FROM productos WHERE categoria_id = 2 OR stock = 0;` },
-    { g: 'Avanzado', n: 'Trigger de auditoría', ds: 'tienda', sql:
+    { g: 'adv', n: 'ex.trigger', ds: 'tienda', sql:
 `CREATE TABLE IF NOT EXISTS auditoria_precios (
     id          INTEGER PRIMARY KEY,
     producto_id INTEGER,
@@ -132,12 +153,16 @@ UPDATE productos SET precio = 99.90 WHERE id = 4;
 UPDATE productos SET precio = 49.90 WHERE id = 5;
 
 SELECT * FROM auditoria_precios;` },
-    { g: 'Avanzado', n: 'Conjuntos: UNION / INTERSECT / EXCEPT', ds: 'tienda', sql:
+    { g: 'adv', n: 'ex.sets', ds: 'tienda', sqlEn:
+`-- Customers who ordered in 2023 but NOT in 2024
+SELECT DISTINCT cliente_id FROM pedidos WHERE fecha LIKE '2023%'
+EXCEPT
+SELECT DISTINCT cliente_id FROM pedidos WHERE fecha LIKE '2024%';`, sql:
 `-- Clientes que han pedido en 2023 pero NO en 2024
 SELECT DISTINCT cliente_id FROM pedidos WHERE fecha LIKE '2023%'
 EXCEPT
 SELECT DISTINCT cliente_id FROM pedidos WHERE fecha LIKE '2024%';` },
-    { g: 'DDL', n: 'Crear tabla con restricciones', ds: 'vacia', sql:
+    { g: 'ddl', n: 'ex.createTable', ds: 'vacia', sql:
 `CREATE TABLE proveedores (
     id      INTEGER PRIMARY KEY AUTOINCREMENT,
     nombre  TEXT    NOT NULL UNIQUE,
@@ -171,32 +196,32 @@ SELECT * FROM proveedores;` }
     /* --- barra superior --- */
     const dsSelect = el('select', { class: 'select' });
     Object.values(window.DATASETS).forEach(d =>
-      dsSelect.appendChild(el('option', { value: d.id }, d.name)));
-    dsSelect.appendChild(el('option', { value: 'vacia' }, 'Base vacía'));
+      dsSelect.appendChild(el('option', { value: d.id }, I18N.datasetField(d, 'name'))));
+    dsSelect.appendChild(el('option', { value: 'vacia' }, t('pg.emptyDb')));
     dsSelect.value = currentDataset;
 
     const ejSelect = el('select', { class: 'select' });
-    ejSelect.appendChild(el('option', { value: '' }, 'Cargar ejemplo…'));
+    ejSelect.appendChild(el('option', { value: '' }, t('pg.loadExample')));
     const grupos = [...new Set(EJEMPLOS.map(e => e.g))];
     grupos.forEach(g => {
-      const og = el('optgroup', { label: g });
-      EJEMPLOS.forEach((e, i) => { if (e.g === g) og.appendChild(el('option', { value: String(i) }, e.n)); });
+      const og = el('optgroup', { label: t('pg.group.' + g) });
+      EJEMPLOS.forEach((e, i) => { if (e.g === g) og.appendChild(el('option', { value: String(i) }, t('pg.' + e.n))); });
       ejSelect.appendChild(og);
     });
 
-    const runBtn = el('button', { class: 'btn btn-primary' }, 'Ejecutar ⌘⏎');
-    const runSelBtn = el('button', { class: 'btn btn-ghost', title: 'Ejecuta solo el texto seleccionado' }, 'Ejecutar selección');
-    const resetBtn = el('button', { class: 'btn btn-ghost' }, 'Reiniciar base');
-    const saveBtn = el('button', { class: 'btn btn-ghost' }, 'Guardar consulta');
+    const runBtn = el('button', { class: 'btn btn-primary' }, t('pg.run'));
+    const runSelBtn = el('button', { class: 'btn btn-ghost', title: t('pg.runSelectionTitle') }, t('pg.runSelection'));
+    const resetBtn = el('button', { class: 'btn btn-ghost' }, t('pg.resetDb'));
+    const saveBtn = el('button', { class: 'btn btn-ghost' }, t('pg.saveQuery'));
     const exportMenu = el('select', { class: 'select' });
-    ['Exportar…', 'Resultado a CSV', 'Base a .sqlite', 'Script a .sql'].forEach((t, i) =>
-      exportMenu.appendChild(el('option', { value: String(i) }, t)));
+    ['pg.export', 'pg.exportCsv', 'pg.exportDb', 'pg.exportSql'].forEach((key, i) =>
+      exportMenu.appendChild(el('option', { value: String(i) }, t(key))));
     const importInput = el('input', { type: 'file', accept: '.sql,.sqlite,.db', class: 'hidden' });
-    const importBtn = el('button', { class: 'btn btn-ghost' }, 'Importar…');
+    const importBtn = el('button', { class: 'btn btn-ghost' }, t('pg.import'));
 
     const bar = el('div', { class: 'pg-bar' },
-      el('label', { class: 'pg-field' }, el('span', {}, 'Datos'), dsSelect),
-      el('label', { class: 'pg-field' }, el('span', {}, 'Ejemplos'), ejSelect),
+      el('label', { class: 'pg-field' }, el('span', {}, t('pg.data')), dsSelect),
+      el('label', { class: 'pg-field' }, el('span', {}, t('pg.examples')), ejSelect),
       el('div', { class: 'pg-bar-actions' }, runBtn, runSelBtn, resetBtn, saveBtn, importBtn, exportMenu, importInput)
     );
 
@@ -204,7 +229,7 @@ SELECT * FROM proveedores;` }
     const schemaPane = el('aside', { class: 'pg-schema' });
     const editorHost = el('div', { class: 'pg-editor' });
     const resultsHost = el('div', { class: 'pg-results' });
-    const statusBar = el('div', { class: 'pg-status' }, 'Listo.');
+    const statusBar = el('div', { class: 'pg-status' }, t('pg.ready'));
     const snippetsPane = el('div', { class: 'pg-snippets' });
 
     const body = el('div', { class: 'pg-body' },
@@ -237,17 +262,17 @@ SELECT * FROM proveedores;` }
 
     function drawSchema() {
       schemaPane.textContent = '';
-      schemaPane.appendChild(el('div', { class: 'pane-title' }, 'Esquema'));
+      schemaPane.appendChild(el('div', { class: 'pane-title' }, t('pg.schema')));
       const objs = Engine.schema(db);
       if (!objs.length) {
-        schemaPane.appendChild(el('div', { class: 'pane-empty' }, 'La base está vacía. Crea tablas con CREATE TABLE.'));
+        schemaPane.appendChild(el('div', { class: 'pane-empty' }, t('pg.schemaEmpty')));
         return;
       }
-      const groups = { table: 'Tablas', view: 'Vistas', index: 'Índices', trigger: 'Disparadores' };
-      Object.entries(groups).forEach(([type, label]) => {
+      const groups = { table: 'pg.tables', view: 'pg.views', index: 'pg.indexes', trigger: 'pg.triggers' };
+      Object.entries(groups).forEach(([type, labelKey]) => {
         const items = objs.filter(o => o.type === type);
         if (!items.length) return;
-        schemaPane.appendChild(el('div', { class: 'schema-group' }, label));
+        schemaPane.appendChild(el('div', { class: 'schema-group' }, t(labelKey)));
         items.forEach(o => {
           const head = el('div', { class: 'schema-obj' },
             el('span', { class: 'schema-name' }, o.name),
@@ -288,13 +313,13 @@ SELECT * FROM proveedores;` }
       resultsHost.textContent = '';
       const tables = results.filter(r => r.columns);
       if (!results.length) {
-        resultsHost.appendChild(el('div', { class: 'result-empty' }, 'Nada que ejecutar.'));
+        resultsHost.appendChild(el('div', { class: 'result-empty' }, t('pg.nothingToRun')));
         return;
       }
       const err = results.find(r => r.error);
       if (err) {
         resultsHost.appendChild(el('div', { class: 'result-error' },
-          el('strong', {}, 'Error: '), err.error,
+          el('strong', {}, t('pg.error', { msg: '' })), err.error,
           el('pre', { class: 'err-sql' }, err.sql)));
       }
       results.forEach((r, i) => {
@@ -303,7 +328,7 @@ SELECT * FROM proveedores;` }
           const card = el('div', { class: 'result-card' });
           const head = el('div', { class: 'result-head' },
             el('code', { class: 'result-sql' }, r.sql.length > 120 ? r.sql.slice(0, 120) + '…' : r.sql),
-            el('span', { class: 'result-meta' }, `${r.values.length} fila(s)`));
+            el('span', { class: 'result-meta' }, t('pg.rows', { n: r.values.length })));
           const csvBtn = el('button', { class: 'linkish' }, 'CSV');
           csvBtn.addEventListener('click', () => download(`resultado_${i + 1}.csv`, toCSV(r), 'text/csv'));
           head.appendChild(csvBtn);
@@ -314,11 +339,11 @@ SELECT * FROM proveedores;` }
           resultsHost.appendChild(el('div', { class: 'result-ok' },
             r.rowsModified == null
               ? `✓ ${head}${r.sql.length > 80 ? '…' : ''}`
-              : `✓ ${head}${r.sql.length > 80 ? '…' : ''} — ${r.rowsModified} fila(s) afectadas`));
+              : `✓ ${head}${r.sql.length > 80 ? '…' : ''} — ${t('pg.rowsAffected', { n: r.rowsModified })}`));
         }
       });
       if (!tables.length && !err) {
-        statusBar.textContent = 'Sentencias ejecutadas correctamente.';
+        statusBar.textContent = t('pg.stmtsOk');
       }
     }
 
@@ -334,8 +359,8 @@ SELECT * FROM proveedores;` }
       const errored = results.find(r => r.error);
       statusBar.className = 'pg-status' + (errored ? ' status-error' : '');
       statusBar.textContent = errored
-        ? 'Error: ' + errored.error
-        : `${results.length} sentencia(s) en ${ms} ms`;
+        ? t('pg.error', { msg: errored.error })
+        : t('pg.stmtsIn', { n: results.length, ms });
       show(results);
       drawSchema();
       try { localStorage.setItem(LS_LAST, editor.getValue()); } catch (e) { }
@@ -350,16 +375,16 @@ SELECT * FROM proveedores;` }
     /* --- consultas guardadas --- */
     function drawSnippets() {
       snippetsPane.textContent = '';
-      snippetsPane.appendChild(el('div', { class: 'pane-title' }, 'Mis consultas'));
+      snippetsPane.appendChild(el('div', { class: 'pane-title' }, t('pg.mySnippets')));
       const list = loadSnippets();
       if (!list.length) {
-        snippetsPane.appendChild(el('div', { class: 'pane-empty' }, 'Guarda una consulta para tenerla siempre a mano.'));
+        snippetsPane.appendChild(el('div', { class: 'pane-empty' }, t('pg.snippetsEmpty')));
         return;
       }
       list.forEach((s, i) => {
         const row = el('div', { class: 'snippet' },
           el('span', { class: 'snippet-name' }, s.name));
-        const del = el('button', { class: 'snippet-del', title: 'Eliminar' }, '×');
+        const del = el('button', { class: 'snippet-del', title: t('pg.deleteSnippet') }, '×');
         del.addEventListener('click', e => {
           e.stopPropagation();
           const l = loadSnippets(); l.splice(i, 1); saveSnippets(l); drawSnippets();
@@ -377,7 +402,7 @@ SELECT * FROM proveedores;` }
     /* --- eventos --- */
     dsSelect.addEventListener('change', () => {
       makeDb(dsSelect.value);
-      statusBar.textContent = 'Base cargada: ' + dsSelect.options[dsSelect.selectedIndex].text;
+      statusBar.textContent = t('pg.dbLoaded', { name: dsSelect.options[dsSelect.selectedIndex].text });
       resultsHost.textContent = '';
     });
 
@@ -386,7 +411,7 @@ SELECT * FROM proveedores;` }
       if (i === '') return;
       const e = EJEMPLOS[Number(i)];
       if (e.ds !== currentDataset) { dsSelect.value = e.ds; makeDb(e.ds); }
-      editor.setValue(e.sql);
+      editor.setValue(I18N.lang === 'en' && e.sqlEn ? e.sqlEn : e.sql);
       ejSelect.value = '';
       editor.focus();
     });
@@ -396,18 +421,18 @@ SELECT * FROM proveedores;` }
     resetBtn.addEventListener('click', () => {
       makeDb(currentDataset);
       resultsHost.textContent = '';
-      statusBar.textContent = 'Base reiniciada.';
-      toast('Base de datos reiniciada', 'info');
+      statusBar.textContent = t('pg.dbReset');
+      toast(t('pg.dbReset'), 'info');
     });
     saveBtn.addEventListener('click', () => {
       const sql = editor.getValue().trim();
-      if (!sql) return toast('No hay nada que guardar', 'warn');
-      const name = prompt('Nombre de la consulta:', 'Consulta ' + (loadSnippets().length + 1));
+      if (!sql) return toast(t('pg.nothingToSave'), 'warn');
+      const name = prompt(t('pg.snippetName'), t('pg.snippetDefault', { n: loadSnippets().length + 1 }));
       if (!name) return;
       const list = loadSnippets();
       list.unshift({ name, sql, dataset: currentDataset });
       saveSnippets(list); drawSnippets();
-      toast('Consulta guardada', 'ok');
+      toast(t('pg.snippetSaved'), 'ok');
     });
 
     exportMenu.addEventListener('change', () => {
@@ -415,9 +440,9 @@ SELECT * FROM proveedores;` }
       exportMenu.value = '0';
       if (v === '1') {
         const cards = resultsHost.querySelectorAll('.result-card');
-        if (!cards.length) return toast('Ejecuta primero una consulta con resultados', 'warn');
+        if (!cards.length) return toast(t('pg.runFirst'), 'warn');
         const last = Engine.run(db, editor.getValue()).filter(r => r.columns).pop();
-        if (!last) return toast('Sin resultados que exportar', 'warn');
+        if (!last) return toast(t('pg.nothingToExport'), 'warn');
         download('resultado.csv', toCSV(last), 'text/csv');
       } else if (v === '2') {
         download(currentDataset + '.sqlite', new Blob([db.export()], { type: 'application/octet-stream' }));
@@ -432,7 +457,7 @@ SELECT * FROM proveedores;` }
       if (!file) return;
       const reader = new FileReader();
       if (/\.sql$/i.test(file.name)) {
-        reader.onload = () => { editor.setValue(String(reader.result)); toast('Script cargado en el editor', 'ok'); };
+        reader.onload = () => { editor.setValue(String(reader.result)); toast(t('pg.scriptLoaded'), 'ok'); };
         reader.readAsText(file);
       } else {
         reader.onload = () => {
@@ -440,8 +465,8 @@ SELECT * FROM proveedores;` }
             db = Engine.fromBinary(new Uint8Array(reader.result));
             currentDataset = 'importada';
             drawSchema();
-            toast('Base de datos importada', 'ok');
-          } catch (e) { toast('No se pudo abrir el archivo: ' + e.message, 'error'); }
+            toast(t('pg.dbImported'), 'ok');
+          } catch (e) { toast(t('pg.dbImportError', { msg: e.message }), 'error'); }
         };
         reader.readAsArrayBuffer(file);
       }
@@ -456,7 +481,7 @@ SELECT * FROM proveedores;` }
       value: saved || EJEMPLOS[1].sql,
       onRun: runAll,
       tables: hints(),
-      placeholder: 'Escribe SQL. Varias sentencias separadas por ; — Ctrl/⌘+Enter para ejecutar.'
+      placeholder: t('pg.editorPlaceholder')
     });
     editor.setOption('extraKeys', Object.assign({}, editor.getOption('extraKeys'), {
       'Shift-Ctrl-Enter': runSelection,
@@ -465,7 +490,7 @@ SELECT * FROM proveedores;` }
     drawSnippets();
     drawSchema();
     setTimeout(() => editor.refresh(), 0);
-    resultsHost.appendChild(el('div', { class: 'result-empty' }, 'Ejecuta una consulta para ver los resultados aquí.'));
+    resultsHost.appendChild(el('div', { class: 'result-empty' }, t('pg.runToSee')));
 
     return { destroy() { try { db.close(); } catch (e) { } } };
   }

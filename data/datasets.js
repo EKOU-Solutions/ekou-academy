@@ -10,6 +10,7 @@
     id: 'pixar',
     name: 'Pixar',
     description: 'Películas de Pixar, su recaudación y sus localizaciones. Es la base original de SQLBolt.',
+    i18n: { en: { name: 'Pixar', description: "Pixar movies, their box office and their locations. This is SQLBolt's original database." } },
     tables: ['movies', 'boxoffice', 'movie_location'],
     sql: `
 CREATE TABLE movies (
@@ -77,6 +78,7 @@ INSERT INTO boxoffice VALUES
     id: 'misc',
     name: 'Oficina y ciudades',
     description: 'Empleados, edificios y ciudades de Norteamérica. Base original de SQLBolt para JOINs, NULLs y agregados.',
+    i18n: { en: { name: 'Office and cities', description: "Employees, buildings and North American cities. SQLBolt's original database for JOINs, NULLs and aggregates." } },
     tables: ['employees', 'buildings', 'north_american_cities'],
     sql: `
 CREATE TABLE buildings (
@@ -137,6 +139,7 @@ INSERT INTO north_american_cities VALUES
     id: 'tienda',
     name: 'Tienda online',
     description: 'Clientes, productos, pedidos y sus detalles. Incluye fechas, NULLs y claves foráneas: sirve para vistas, índices, CTEs, funciones de ventana, triggers y transacciones.',
+    i18n: { en: { name: 'Online store', description: 'Customers, products, orders and their line items. It has dates, NULLs and foreign keys, so it works for views, indexes, CTEs, window functions, triggers and transactions.' } },
     tables: ['clientes', 'categorias', 'productos', 'pedidos', 'detalle_pedido', 'empleados'],
     sql: `
 PRAGMA foreign_keys = ON;

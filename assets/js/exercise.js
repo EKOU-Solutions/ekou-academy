@@ -1,6 +1,7 @@
 /* Widget de ejercicio: editor + resultados + tareas verificadas. */
 (function () {
   const { el, renderTable, makeEditor, Progress, toast } = UI;
+  const t = (k, p) => I18N.t(k, p);
 
   function tableHints(db) {
     const hints = {};
@@ -33,36 +34,37 @@
     const editorHost = el('div', { class: 'ex-editor' });
     const actions = el('div', { class: 'ex-actions' });
 
-    const runBtn = el('button', { class: 'btn btn-primary' }, 'Ejecutar ⌘⏎');
-    const resetDataBtn = el('button', { class: 'btn btn-ghost', title: 'Vuelve a cargar los datos originales' }, 'Reiniciar datos');
-    const resetSqlBtn = el('button', { class: 'btn btn-ghost' }, 'Limpiar consulta');
+    const runBtn = el('button', { class: 'btn btn-primary' }, t('ex.run'));
+    const resetDataBtn = el('button', { class: 'btn btn-ghost', title: t('ex.resetDataTitle') }, t('ex.resetData'));
+    const resetSqlBtn = el('button', { class: 'btn btn-ghost' }, t('ex.clearQuery'));
     actions.append(runBtn, resetSqlBtn, resetDataBtn,
-      el('span', { class: 'ex-dataset' }, 'Base: ' + dataset.name));
+      el('span', { class: 'ex-dataset' }, t('ex.dataset', { name: I18N.datasetField(dataset, 'name') })));
 
     left.append(tabsBar, resultHost, message, editorHost, actions);
 
     /* ---------- panel derecho: tareas ---------- */
-    const tasksTitle = el('div', { class: 'tasks-title' }, ex.title || 'Tareas');
+    const tasksTitle = el('div', { class: 'tasks-title' }, I18N.exerciseTitle(lesson));
     const tasksList = el('ol', { class: 'tasks-list' });
-    const continueBtn = el('a', { class: 'btn btn-continue disabled' }, 'Completa las tareas');
+    const continueBtn = el('a', { class: 'btn btn-continue disabled' }, t('ex.continueDisabled'));
     right.append(tasksTitle, tasksList, continueBtn);
 
-    const taskNodes = ex.tasks.map((t, i) => {
+    const taskNodes = ex.tasks.map((task, i) => {
       const li = el('li', { class: 'task' });
-      li.appendChild(el('div', { class: 'task-text', html: t.text }));
+      li.appendChild(el('div', { class: 'task-text', html: I18N.taskField(lesson, i, 'text') }));
       const tools = el('div', { class: 'task-tools' });
-      if (t.hint) {
-        const hintBtn = el('button', { class: 'linkish' }, 'Pista');
-        const hintBox = el('div', { class: 'task-hint hidden', html: t.hint });
+      const hintText = I18N.taskField(lesson, i, 'hint');
+      if (hintText) {
+        const hintBtn = el('button', { class: 'linkish' }, t('ex.hint'));
+        const hintBox = el('div', { class: 'task-hint hidden', html: hintText });
         hintBtn.addEventListener('click', () => hintBox.classList.toggle('hidden'));
         tools.appendChild(hintBtn);
         li.appendChild(hintBox);
       }
-      const solBtn = el('button', { class: 'linkish' }, 'Ver solución');
+      const solBtn = el('button', { class: 'linkish' }, t('ex.showSolution'));
       solBtn.addEventListener('click', () => {
-        editor.setValue(t.solution);
+        editor.setValue(task.solution);
         editor.focus();
-        setMessage('Solución cargada en el editor. Ejecútala para ver el resultado.', 'info');
+        setMessage(t('ex.solutionLoaded'), 'info');
       });
       tools.appendChild(solBtn);
       li.appendChild(tools);
@@ -88,15 +90,15 @@
     let activeTab = '_result';
     function buildTabs() {
       tabsBar.textContent = '';
-      const tabs = [{ id: '_result', label: 'Resultado' }]
+      const tabs = [{ id: '_result', label: t('ex.tabResult') }]
         .concat((ex.tables || []).map(t => ({ id: t, label: t })));
-      tabs.forEach(t => {
-        const b = el('button', { class: 'ex-tab' + (t.id === activeTab ? ' active' : '') }, t.label);
+      tabs.forEach(tab => {
+        const b = el('button', { class: 'ex-tab' + (tab.id === activeTab ? ' active' : '') }, tab.label);
         b.addEventListener('click', () => {
-          activeTab = t.id;
+          activeTab = tab.id;
           buildTabs();
-          if (t.id === '_result') showResult(lastResult, lastMessage);
-          else showTable(t.id);
+          if (tab.id === '_result') showResult(lastResult, lastMessage);
+          else showTable(tab.id);
         });
         tabsBar.appendChild(b);
       });
@@ -106,7 +108,7 @@
     function showResult(res, note) {
       lastResult = res; lastMessage = note || '';
       resultHost.textContent = '';
-      if (!res) { resultHost.appendChild(el('div', { class: 'result-empty' }, 'Ejecuta una consulta para ver el resultado.')); return; }
+      if (!res) { resultHost.appendChild(el('div', { class: 'result-empty' }, t('ex.runToSee'))); return; }
       if (res.error) { resultHost.appendChild(el('div', { class: 'result-error' }, res.error)); return; }
       resultHost.appendChild(renderTable(res));
     }
@@ -137,7 +139,7 @@
     /* ---------- ejecución + verificación ---------- */
     function execute() {
       const sql = editor.getValue().trim();
-      if (!sql) { setMessage('Escribe una consulta antes de ejecutar.', 'warn'); return; }
+      if (!sql) { setMessage(t('ex.writeSomething'), 'warn'); return; }
       let results;
       try {
         results = Engine.run(db, sql);
@@ -159,12 +161,12 @@
           if (verdictErr.ok) {
             onTaskPassed(current, task0);
             const msg = message.innerHTML;
-            setMessage(msg + ' <span class="ex-expected">La base de datos rechazó la sentencia: ' +
-              UI.escapeHtml(errored.error) + '</span>', 'ok');
+            setMessage(msg + ' <span class="ex-expected">' +
+              t('ex.rejected', { msg: UI.escapeHtml(errored.error) }) + '</span>', 'ok');
             return;
           }
         }
-        setMessage('Error de SQL: ' + errored.error, 'error');
+        setMessage(t('ex.sqlError', { msg: errored.error }), 'error');
         return;
       }
       const withRows = results.filter(r => r.columns);
@@ -175,7 +177,7 @@
       const task = ex.tasks[current];
       if (task.expectsError) {
         // la sentencia debía ser rechazada por la base de datos y no lo ha sido
-        setMessage('La sentencia se ha ejecutado sin error, pero esta tarea espera que la base de datos la <strong>rechace</strong>.', 'warn');
+        setMessage(t('ex.expectedRejection'), 'warn');
         return;
       }
       const verdict = Checker.verify(task, { db, userRes, task, userSql: sql });
@@ -188,10 +190,10 @@
           const dml = results.filter(r => r.rowsModified != null);
           const changed = dml.reduce((a, r) => a + r.rowsModified, 0);
           setMessage(dml.length
-            ? `Sentencia ejecutada (${changed} fila(s) afectadas). ${verdict.reason || ''}`
-            : `Sentencia ejecutada. ${verdict.reason || ''}`, 'warn');
+            ? t('ex.stmtRunRows', { n: changed, reason: verdict.reason || '' })
+            : t('ex.stmtRun', { reason: verdict.reason || '' }), 'warn');
         } else {
-          setMessage('Todavía no: ' + (verdict.reason || 'el resultado no coincide con lo pedido.'), 'warn');
+          setMessage(t('ex.notYet', { reason: verdict.reason || t('ex.defaultFail') }), 'warn');
         }
       }
     }
@@ -202,7 +204,7 @@
         taskNodes[i].classList.add('done');
         Progress.markTask(lesson.slug, i);
       }
-      let note = '¡Correcto!';
+      let note = t('ex.correct');
       const pva = task.postValidateAction;
       if (pva) {
         if (pva.runActionOnce && !doneOnce.has(i)) {
@@ -215,7 +217,7 @@
       }
       setMessage(note, 'ok');
 
-      const nextPending = ex.tasks.findIndex((t, k) => !passed[k]);
+      const nextPending = ex.tasks.findIndex((_, k) => !passed[k]);
       if (nextPending === -1) {
         finish();
       } else {
@@ -227,10 +229,12 @@
       Progress.markDone(lesson.slug);
       const nxt = CURSO.next(lesson.slug);
       continueBtn.classList.remove('disabled');
-      continueBtn.textContent = nxt ? 'Continuar → ' + nxt.shortTitle : '¡Curso completado!';
+      continueBtn.textContent = nxt
+        ? t('ex.continueTo', { title: I18N.field(nxt, 'shortTitle') })
+        : t('ex.courseDone');
       if (nxt) continueBtn.setAttribute('href', '#/' + nxt.slug);
-      setMessage('¡Ejercicio completado! 🎉', 'ok');
-      toast('Lección completada: ' + lesson.shortTitle, 'ok');
+      setMessage(t('ex.completed'), 'ok');
+      toast(t('toast.lessonDone', { title: I18N.field(lesson, 'shortTitle') }), 'ok');
     }
 
     /* ---------- montaje ---------- */
@@ -253,10 +257,12 @@
     if (saved.done) {
       const nxt = CURSO.next(lesson.slug);
       continueBtn.classList.remove('disabled');
-      continueBtn.textContent = nxt ? 'Continuar → ' + nxt.shortTitle : '¡Curso completado!';
+      continueBtn.textContent = nxt
+        ? t('ex.continueTo', { title: I18N.field(nxt, 'shortTitle') })
+        : t('ex.courseDone');
       if (nxt) continueBtn.setAttribute('href', '#/' + nxt.slug);
     }
-    const firstPending = ex.tasks.findIndex((t, k) => !passed[k]);
+    const firstPending = ex.tasks.findIndex((_, k) => !passed[k]);
     setCurrent(firstPending === -1 ? 0 : firstPending);
 
     runBtn.addEventListener('click', execute);
@@ -264,7 +270,7 @@
     resetDataBtn.addEventListener('click', () => {
       makeDb();
       showResult(null);
-      setMessage('Datos restaurados a su estado inicial.', 'info');
+      setMessage(t('ex.dataRestored'), 'info');
       activeTab = '_result'; buildTabs();
     });
 
