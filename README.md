@@ -1,4 +1,4 @@
-# SQL Total
+# EKOU Academy
 
 Copia en español del curso interactivo de [SQLBolt](https://sqlbolt.com), **ampliada** con los temas que
 el original no cubre (vistas, índices, restricciones, transacciones, disparadores, procedimientos
@@ -22,6 +22,7 @@ Y abre <http://localhost:4173>. Cualquier servidor estático vale; lo que **no**
 | Ruta | Contenido |
 |---|---|
 | `index.html` | Única página; carga los datos y los módulos en orden |
+| `assets/js/i18n.js` | Catálogo de cadenas de interfaz y traducciones del temario |
 | `assets/js/registry.js` | Registro del temario y sus secciones |
 | `assets/js/engine.js` | SQLite en el navegador: crear bases, ejecutar scripts, leer el esquema, funciones de usuario |
 | `assets/js/checker.js` | Verificación de las tareas de cada ejercicio |
@@ -30,7 +31,8 @@ Y abre <http://localhost:4173>. Cualquier servidor estático vale; lo que **no**
 | `assets/js/app.js` | Router, barra lateral, temas claro/oscuro, progreso |
 | `assets/js/ui.js` | Tabla de resultados, editor, toasts, progreso en `localStorage` |
 | `data/datasets.js` | Las tres bases de ejemplo |
-| `data/lessons/*.js` | Un archivo por tema: texto + ejercicio |
+| `data/lessons/*.js` | Un archivo por tema: texto + ejercicio (español) |
+| `data/i18n/en-*.js` | Traducción al inglés de cada tema y de sus tareas |
 | `data/raw/` | El material scrapeado tal cual (ver más abajo) |
 | `tools/` | Scraper, copia de dependencias y pruebas |
 
@@ -56,6 +58,30 @@ SQLite no tiene procedimientos almacenados, ni `CREATE FUNCTION`, ni usuarios y 
 están marcados como **referencia**: incluyen la sintaxis real de MySQL, PostgreSQL, SQL Server y Oracle,
 y sus ejercicios practican la parte que sí se puede ejecutar (el cuerpo del procedimiento, las funciones
 de usuario registradas desde JavaScript, las alternativas basadas en conjuntos a los cursores).
+
+## Idiomas
+
+El sitio está en **español e inglés**. El selector `ES / EN` de la cabecera cambia todo a la vez: cuerpo de
+las lecciones, títulos, resúmenes, enunciados y pistas de los ejercicios, mensajes del corrector, interfaz
+del Playground, nombres de las bases de ejemplo e incluso los comentarios de los ejemplos SQL.
+
+- El idioma inicial se toma de `navigator.language` y, a partir de ahí, del que elijas: se guarda en
+  `localStorage`.
+- El español vive en los propios archivos de `data/lessons/`. El inglés se registra aparte, en
+  `data/i18n/en-*.js`, con `I18N.registerLessons('en', { … })`. Si falta una traducción, se muestra el
+  español en su lugar en vez de romperse.
+- Las cadenas de interfaz están en un único diccionario dentro de `assets/js/i18n.js`, con `t('clave')` y
+  parámetros del tipo `{n}`.
+
+Para **añadir un idioma nuevo** (por ejemplo portugués):
+
+1. Añade `'pt'` a `SUPPORTED` y un bloque `pt: { … }` al diccionario de `assets/js/i18n.js`.
+2. Crea `data/i18n/pt-*.js` con `I18N.registerLessons('pt', { … })` y enlázalos en `index.html`.
+3. Añade un botón `<button data-lang="pt">PT</button>` al `#langSwitch`.
+4. Ejecuta `npm test`: `tools/test-i18n.js` te dirá exactamente qué falta.
+
+El SQL de los ejercicios, los nombres de las tablas y los datos de ejemplo están en español en las tres
+bases: se comparten entre idiomas para que las soluciones sean las mismas.
 
 ## Bases de datos de ejemplo
 
@@ -90,10 +116,13 @@ Definidas en `assets/js/engine.js` y disponibles en todas las bases:
 npm test
 ```
 
-Dos pasadas sobre las 115 tareas, sin navegador:
+Tres pasadas sin navegador:
 
-- `tools/test-exercises.js` ejecuta la solución de cada tarea y comprueba que la verificación la acepta.
+- `tools/test-exercises.js` ejecuta la solución de cada una de las 115 tareas y comprueba que la verificación la acepta.
 - `tools/test-negative.js` envía una respuesta incorrecta a cada tarea y comprueba que la verificación la rechaza.
+- `tools/test-i18n.js` comprueba que las traducciones están completas: cada tema con su título, resumen y cuerpo en
+  inglés, cada tarea con su enunciado (y su pista, si la tiene en español), los dos diccionarios de interfaz con
+  exactamente las mismas claves, y ninguna clave usada en el código que no exista en el catálogo.
 
 ## Sobre el scraping
 

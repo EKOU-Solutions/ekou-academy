@@ -1,6 +1,8 @@
 /* Router y armazón de la aplicación. */
 (function () {
   const { el, Progress, toast } = UI;
+  const t = (k, p) => I18N.t(k, p);
+  const L = (lesson, f) => I18N.field(lesson, f);
   const main = document.getElementById('main');
   const sidebarNav = document.getElementById('sidebarNav');
   const sidebar = document.getElementById('sidebar');
@@ -18,6 +20,35 @@
     applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
   });
 
+  /* ---------------- idioma ---------------- */
+  function applyStaticStrings() {
+    document.querySelectorAll('[data-i18n]').forEach(n => { n.textContent = t(n.dataset.i18n); });
+    document.querySelectorAll('[data-i18n-title]').forEach(n => { n.title = t(n.dataset.i18nTitle); });
+    document.querySelectorAll('[data-i18n-label]').forEach(n => { n.setAttribute('aria-label', t(n.dataset.i18nLabel)); });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(n => { n.placeholder = t(n.dataset.i18nPlaceholder); });
+    const meta = document.querySelector('meta[name="description"]');
+    if (meta) meta.setAttribute('content', t('meta.description'));
+  }
+
+  const langSwitch = document.getElementById('langSwitch');
+  function paintLangSwitch() {
+    langSwitch.querySelectorAll('button').forEach(b => {
+      const on = b.dataset.lang === I18N.lang;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+  langSwitch.addEventListener('click', e => {
+    const btn = e.target.closest('button[data-lang]');
+    if (btn) I18N.set(btn.dataset.lang);
+  });
+  document.addEventListener('lang:changed', () => {
+    paintLangSwitch();
+    applyStaticStrings();
+    buildSidebar(document.getElementById('lessonSearch').value);
+    route();
+  });
+
   /* ---------------- barra lateral ---------------- */
   function buildSidebar(filter) {
     sidebarNav.textContent = '';
@@ -27,13 +58,17 @@
 
     CURSO.bySection().forEach(group => {
       const items = group.items.filter(l =>
-        !q || l.title.toLowerCase().includes(q) || (l.keywords || '').toLowerCase().includes(q));
+        !q ||
+        L(l, 'title').toLowerCase().includes(q) ||
+        L(l, 'shortTitle').toLowerCase().includes(q) ||
+        (L(l, 'summary') || '').toLowerCase().includes(q) ||
+        (l.keywords || '').toLowerCase().includes(q));
       if (!items.length) return;
       shown += items.length;
       const box = el('div', { class: 'nav-group' });
       box.appendChild(el('div', { class: 'nav-group-title' },
-        el('span', {}, group.section.name),
-        el('small', {}, group.section.hint)));
+        el('span', {}, t('section.' + group.section.id + '.name')),
+        el('small', {}, t('section.' + group.section.id + '.hint'))));
       items.forEach(l => {
         const done = progress[l.slug] && progress[l.slug].done;
         const a = el('a', {
@@ -41,15 +76,15 @@
           href: '#/' + l.slug
         },
           el('span', { class: 'nav-check' }, done ? '✓' : ''),
-          el('span', { class: 'nav-label' }, l.shortTitle),
-          l.exercise ? null : el('span', { class: 'nav-tag', title: 'Tema de referencia, sin ejercicio' }, 'ref')
+          el('span', { class: 'nav-label' }, L(l, 'shortTitle')),
+          l.exercise ? null : el('span', { class: 'nav-tag', title: t('nav.refTagTitle') }, t('nav.refTag'))
         );
         box.appendChild(a);
       });
       sidebarNav.appendChild(box);
     });
 
-    if (!shown) sidebarNav.appendChild(el('div', { class: 'pane-empty' }, 'Ningún tema coincide con la búsqueda.'));
+    if (!shown) sidebarNav.appendChild(el('div', { class: 'pane-empty' }, t('search.noMatch')));
     highlightActive();
   }
 
@@ -67,9 +102,9 @@
 
   document.getElementById('lessonSearch').addEventListener('input', e => buildSidebar(e.target.value));
   document.getElementById('resetProgress').addEventListener('click', () => {
-    if (confirm('¿Borrar todo el progreso guardado en este navegador?')) {
+    if (confirm(t('progress.resetConfirm'))) {
       Progress.reset();
-      toast('Progreso reiniciado', 'info');
+      toast(t('progress.resetDone'), 'info');
     }
   });
   document.addEventListener('progress:changed', () => { buildSidebar(document.getElementById('lessonSearch').value); updateProgressPill(); });
@@ -93,44 +128,41 @@
     const wrap = el('div', { class: 'page home' });
 
     wrap.appendChild(el('section', { class: 'hero' },
-      el('h1', {}, 'Aprende SQL de principio a fin'),
-      el('p', { class: 'lead' },
-        'Curso interactivo en español basado en el temario de SQLBolt, ampliado con vistas, índices, transacciones, funciones, funciones de ventana, disparadores, procedimientos almacenados y diseño de bases de datos. Todo se ejecuta en tu navegador con SQLite: no hay servidor ni instalación.'),
+      el('h1', {}, t('home.title')),
+      el('p', { class: 'lead' }, t('home.lead')),
       el('div', { class: 'hero-actions' },
-        el('a', { class: 'btn btn-primary btn-lg', href: '#/' + CURSO.ordered()[0].slug }, 'Empezar el curso'),
-        el('a', { class: 'btn btn-ghost btn-lg', href: '#/playground' }, 'Abrir el Playground')),
+        el('a', { class: 'btn btn-primary btn-lg', href: '#/' + CURSO.ordered()[0].slug }, t('home.start')),
+        el('a', { class: 'btn btn-ghost btn-lg', href: '#/playground' }, t('home.openPlayground'))),
       el('div', { class: 'hero-stats' },
-        el('div', { class: 'stat' }, el('b', {}, String(total)), el('span', {}, 'temas')),
-        el('div', { class: 'stat' }, el('b', {}, String(conEjercicio)), el('span', {}, 'con ejercicios')),
-        el('div', { class: 'stat' }, el('b', {}, String(Object.keys(window.DATASETS).length)), el('span', {}, 'bases de ejemplo')),
-        el('div', { class: 'stat' }, el('b', {}, 'SQLite'), el('span', {}, 'en WebAssembly')))
+        el('div', { class: 'stat' }, el('b', {}, String(total)), el('span', {}, t('stats.topics'))),
+        el('div', { class: 'stat' }, el('b', {}, String(conEjercicio)), el('span', {}, t('stats.withExercises'))),
+        el('div', { class: 'stat' }, el('b', {}, String(Object.keys(window.DATASETS).length)), el('span', {}, t('stats.datasets'))),
+        el('div', { class: 'stat' }, el('b', {}, 'SQLite'), el('span', {}, t('stats.engine'))))
     ));
 
     const progress = Progress.all();
     CURSO.bySection().forEach(group => {
       const sec = el('section', { class: 'home-section' });
-      sec.appendChild(el('h2', {}, group.section.name, el('small', {}, group.section.hint)));
+      sec.appendChild(el('h2', {}, t('section.' + group.section.id + '.name'),
+        el('small', {}, t('section.' + group.section.id + '.hint'))));
       const grid = el('div', { class: 'card-grid' });
       group.items.forEach(l => {
         const done = progress[l.slug] && progress[l.slug].done;
         grid.appendChild(el('a', { class: 'card' + (done ? ' done' : ''), href: '#/' + l.slug },
           el('div', { class: 'card-top' },
-            el('span', { class: 'card-kind' }, l.source === 'extra' ? 'Ampliación' : 'SQLBolt'),
-            l.exercise ? el('span', { class: 'card-badge' }, 'práctica') : null,
+            el('span', { class: 'card-kind' }, t(l.source === 'extra' ? 'card.extra' : 'card.sqlbolt')),
+            l.exercise ? el('span', { class: 'card-badge' }, t('card.practice')) : null,
             done ? el('span', { class: 'card-done' }, '✓') : null),
-          el('h3', {}, l.shortTitle),
-          el('p', {}, l.summary || '')));
+          el('h3', {}, L(l, 'shortTitle')),
+          el('p', {}, L(l, 'summary') || '')));
       });
       sec.appendChild(grid);
       wrap.appendChild(sec);
     });
 
     wrap.appendChild(el('section', { class: 'home-note' },
-      el('h2', {}, 'Sobre los contenidos'),
-      el('p', { html:
-        'Las lecciones 1 a 18 y los temas de subconsultas y operaciones de conjunto reproducen, traducidos al español, el temario y los ejercicios de <a href="https://sqlbolt.com" target="_blank" rel="noopener">SQLBolt</a>, incluidas sus bases de datos de ejemplo. ' +
-        'El resto de temas — marcados como <em>Ampliación</em> — son material nuevo escrito para este sitio. ' +
-        'El volcado íntegro de la copia original está en <code>data/raw/</code>.' })
+      el('h2', {}, t('home.aboutTitle')),
+      el('p', { html: t('home.aboutBody') })
     ));
 
     return wrap;
@@ -142,13 +174,15 @@
     const section = CURSO.SECTIONS.find(s => s.id === lesson.section);
 
     wrap.appendChild(el('div', { class: 'breadcrumbs' },
-      el('a', { href: '#/' }, 'Curso'), el('span', {}, '›'),
-      el('span', {}, section ? section.name : ''),
-      lesson.source === 'extra' ? el('span', { class: 'pill pill-extra' }, 'Ampliación') : el('span', { class: 'pill' }, 'SQLBolt')));
+      el('a', { href: '#/' }, t('lesson.crumbCourse')), el('span', {}, '›'),
+      el('span', {}, section ? t('section.' + section.id + '.name') : ''),
+      lesson.source === 'extra'
+        ? el('span', { class: 'pill pill-extra' }, t('card.extra'))
+        : el('span', { class: 'pill' }, t('card.sqlbolt'))));
 
-    wrap.appendChild(el('h1', { class: 'lesson-title' }, lesson.title));
-    if (lesson.summary) wrap.appendChild(el('p', { class: 'lesson-summary' }, lesson.summary));
-    wrap.appendChild(el('article', { class: 'lesson-body', html: lesson.body }));
+    wrap.appendChild(el('h1', { class: 'lesson-title' }, L(lesson, 'title')));
+    if (L(lesson, 'summary')) wrap.appendChild(el('p', { class: 'lesson-summary' }, L(lesson, 'summary')));
+    wrap.appendChild(el('article', { class: 'lesson-body', html: L(lesson, 'body') }));
 
     if (lesson.exercise) {
       const exHost = el('section', { class: 'exercise-host' });
@@ -156,13 +190,13 @@
       setTimeout(() => Exercise.build(lesson, exHost), 0);
     } else {
       wrap.appendChild(el('div', { class: 'no-exercise' },
-        el('span', {}, 'Este tema es de referencia. '),
-        el('a', { href: '#/playground' }, 'Pruébalo en el Playground →')));
+        el('span', {}, t('lesson.noExercise')),
+        el('a', { href: '#/playground' }, t('lesson.tryPlayground'))));
     }
 
     wrap.appendChild(el('nav', { class: 'lesson-nav' },
-      prev ? el('a', { class: 'btn btn-ghost', href: '#/' + prev.slug }, '← ' + prev.shortTitle) : el('span', {}),
-      next ? el('a', { class: 'btn btn-primary', href: '#/' + next.slug }, next.shortTitle + ' →') : el('span', {})));
+      prev ? el('a', { class: 'btn btn-ghost', href: '#/' + prev.slug }, '← ' + L(prev, 'shortTitle')) : el('span', {}),
+      next ? el('a', { class: 'btn btn-primary', href: '#/' + next.slug }, L(next, 'shortTitle') + ' →') : el('span', {})));
 
     return wrap;
   }
@@ -170,8 +204,8 @@
   function renderPlayground() {
     const wrap = el('div', { class: 'page page-playground' });
     wrap.appendChild(el('div', { class: 'pg-head' },
-      el('h1', {}, 'Playground SQL'),
-      el('p', {}, 'Un SQLite completo dentro del navegador. Elige una base de ejemplo o crea la tuya, escribe varias sentencias separadas por punto y coma y ejecútalas con ⌘/Ctrl + Enter. Puedes practicar aquí todo lo que aparece en el curso: consultas, DDL, transacciones, vistas, índices, disparadores, CTEs, funciones de ventana y funciones definidas por el usuario.')));
+      el('h1', {}, t('pg.title')),
+      el('p', {}, t('pg.lead'))));
     const host = el('div');
     wrap.appendChild(host);
     setTimeout(() => { currentView = Playground.render(host); }, 0);
@@ -180,9 +214,9 @@
 
   function renderNotFound() {
     return el('div', { class: 'page' },
-      el('h1', {}, 'Página no encontrada'),
-      el('p', {}, 'Ese tema no existe. '),
-      el('a', { class: 'btn btn-primary', href: '#/' }, 'Volver al índice'));
+      el('h1', {}, t('nf.title')),
+      el('p', {}, t('nf.body')),
+      el('a', { class: 'btn btn-primary', href: '#/' }, t('nf.back')));
   }
 
   /* ---------------- router ---------------- */
@@ -209,7 +243,8 @@
     const navKey = hash === 'playground' ? 'playground' : hash === 'referencia' ? 'referencia' : 'curso';
     const navEl = document.querySelector(`.topnav a[data-nav="${navKey}"]`);
     if (navEl) navEl.classList.add('active');
-    document.title = (hash && CURSO.get(hash) ? CURSO.get(hash).shortTitle + ' — ' : '') + 'SQL Total';
+    const cur = hash && CURSO.get(hash);
+    document.title = (cur ? L(cur, 'shortTitle') + ' — ' : '') + t('site.title');
   }
 
   window.addEventListener('hashchange', route);
@@ -217,13 +252,14 @@
   /* ---------------- arranque ---------------- */
   Engine.ready().then(() => {
     document.getElementById('splash')?.remove();
+    applyStaticStrings();
+    paintLangSwitch();
     buildSidebar('');
     updateProgressPill();
     route();
   }).catch(err => {
-    main.innerHTML = `<div class="page"><h1>No se pudo cargar SQLite</h1>
-      <p>El motor WebAssembly no ha podido inicializarse. Abre el sitio desde un servidor HTTP
-      (por ejemplo <code>python3 -m http.server</code>) en lugar de con <code>file://</code>.</p>
+    main.innerHTML = `<div class="page"><h1>${t('boot.failTitle')}</h1>
+      <p>${t('boot.failBody')}</p>
       <pre>${UI.escapeHtml(err.message || err)}</pre></div>`;
   });
 })();

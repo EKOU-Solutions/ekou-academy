@@ -7,7 +7,7 @@ CURSO.register({
   summary: 'Qué es SQL, qué es una base de datos relacional y cómo está organizado este curso.',
   keywords: 'sql introduccion relacional tablas filas columnas',
   body: `
-<p>Bienvenido a <strong>SQL Total</strong>, una serie de lecciones y ejercicios interactivos pensados para
+<p>Bienvenido a <strong>EKOU Academy</strong>, una serie de lecciones y ejercicios interactivos pensados para
 que aprendas SQL rápidamente, directamente en tu navegador.</p>
 
 <h1>¿Qué es SQL?</h1>

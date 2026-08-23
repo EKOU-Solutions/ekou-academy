@@ -34,7 +34,7 @@
   /* Tabla de resultados con orden por columna al hacer clic. */
   function renderTable(result, opts = {}) {
     if (!result || !result.columns || !result.columns.length) {
-      return el('div', { class: 'result-empty' }, opts.emptyText || 'La consulta no ha devuelto columnas.');
+      return el('div', { class: 'result-empty' }, opts.emptyText || I18N.t('result.noColumns'));
     }
     const wrap = el('div', { class: 'table-wrap' });
     const table = el('table', { class: 'datagrid' });
@@ -66,7 +66,7 @@
           if (x === null) return 1;
           if (y === null) return -1;
           if (typeof x === 'number' && typeof y === 'number') return (x - y) * d;
-          return String(x).localeCompare(String(y), 'es') * d;
+          return String(x).localeCompare(String(y), I18N.lang) * d;
         });
       }
       tbody.textContent = '';
@@ -82,7 +82,7 @@
       if (rows.length > limit) {
         const tr = el('tr', { class: 'more-row' });
         tr.appendChild(el('td', { colspan: result.columns.length },
-          `… ${rows.length - limit} fila(s) más no mostradas`));
+          I18N.t('result.moreRows', { n: rows.length - limit })));
         tbody.appendChild(tr);
       }
     }
@@ -98,7 +98,7 @@
       lineNumbers: opts.lineNumbers !== false,
       lineWrapping: true,
       matchBrackets: true,
-      placeholder: opts.placeholder || 'Escribe aquí tu consulta SQL…',
+      placeholder: opts.placeholder || I18N.t('editor.placeholder'),
       viewportMargin: Infinity,
       extraKeys: {
         'Ctrl-Enter': () => opts.onRun && opts.onRun(),
