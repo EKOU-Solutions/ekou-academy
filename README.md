@@ -2,8 +2,8 @@
 
 Copia en español del curso interactivo de [SQLBolt](https://sqlbolt.com), **ampliada** con los temas que
 el original no cubre (vistas, índices, restricciones, transacciones, disparadores, procedimientos
-almacenados, funciones, funciones de ventana, CTEs, normalización, rendimiento y seguridad) y con un
-**Playground SQL** para practicar cualquiera de ellos.
+almacenados, funciones, funciones de ventana, CTEs, normalización, rendimiento y seguridad), más una sección
+de fundamentos de Java, JDK y JVM, y con un **Playground SQL** para practicar cualquiera de ellos.
 
 Todo se ejecuta en el navegador con SQLite compilado a WebAssembly (`sql.js`). No hay backend, ni build,
 ni base de datos que instalar.
@@ -27,18 +27,19 @@ Y abre <http://localhost:4173>. Cualquier servidor estático vale; lo que **no**
 | `assets/js/engine.js` | SQLite en el navegador: crear bases, ejecutar scripts, leer el esquema, funciones de usuario |
 | `assets/js/checker.js` | Verificación de las tareas de cada ejercicio |
 | `assets/js/exercise.js` | Widget de ejercicio (editor + resultados + tareas) |
+| `assets/js/quiz.js` | Corrección y puntuación de quizzes conceptuales |
 | `assets/js/playground.js` | Playground SQL |
 | `assets/js/app.js` | Router, barra lateral, temas claro/oscuro, progreso |
 | `assets/js/ui.js` | Tabla de resultados, editor, toasts, progreso en `localStorage` |
 | `data/datasets.js` | Las tres bases de ejemplo |
-| `data/lessons/*.js` | Un archivo por tema: texto + ejercicio (español) |
+| `data/lessons/*.js` | Un archivo por tema: texto + ejercicio o quiz (español) |
 | `data/i18n/en-*.js` | Traducción al inglés de cada tema y de sus tareas |
 | `data/raw/` | El material scrapeado tal cual (ver más abajo) |
 | `tools/` | Scraper, copia de dependencias y pruebas |
 
 ## El temario
 
-39 temas en 11 secciones, 35 de ellos con ejercicio corregido automáticamente (115 tareas en total).
+41 temas en 12 secciones, 37 de ellos con ejercicio (SQL o quiz) corregido automáticamente (129 tareas en total).
 
 1. **Fundamentos** — introducción, `SELECT`, `WHERE` con números y texto, `DISTINCT`/`ORDER BY`/`LIMIT`, repaso.
 2. **Consultas multitabla** — `INNER JOIN`, `LEFT`/`RIGHT`/`FULL JOIN`, `NULL`, expresiones y alias.
@@ -50,7 +51,8 @@ Y abre <http://localhost:4173>. Cualquier servidor estático vale; lo que **no**
 8. **Objetos** — vistas, índices y planes de ejecución, restricciones e integridad referencial.
 9. **Programación** — transacciones, disparadores, procedimientos almacenados, funciones de usuario, cursores y errores.
 10. **Diseño y rendimiento** — normalización, rendimiento, usuarios y permisos.
-11. **Referencia** — chuleta con equivalencias entre SQLite, PostgreSQL, MySQL, SQL Server y Oracle.
+11. **Java** — flujo `.java` → `javac` → bytecode → launcher `java` → JVM, JDK/JRE, class loading, memoria y práctica local.
+12. **Referencia** — chuleta con equivalencias entre SQLite, PostgreSQL, MySQL, SQL Server y Oracle.
 
 ### Temas que SQLite no soporta
 
@@ -120,6 +122,7 @@ Tres pasadas sin navegador:
 
 - `tools/test-exercises.js` ejecuta la solución de cada una de las 115 tareas y comprueba que la verificación la acepta.
 - `tools/test-negative.js` envía una respuesta incorrecta a cada tarea y comprueba que la verificación la rechaza.
+- `tools/test-java.js` comprueba el registro de la sección Java, su navegación, la corrección/puntuación de los quizzes y la persistencia de respuestas/progreso.
 - `tools/test-i18n.js` comprueba que las traducciones están completas: cada tema con su título, resumen y cuerpo en
   inglés, cada tarea con su enunciado (y su pista, si la tiene en español), los dos diccionarios de interfaz con
   exactamente las mismas claves, y ninguna clave usada en el código que no exista en el catálogo.

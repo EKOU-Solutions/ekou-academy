@@ -37,6 +37,7 @@ const read = f => fs.readFileSync(path.join(root, f), 'utf8');
   for (const lesson of CURSO.ordered()) {
     const ex = lesson.exercise;
     if (!ex) continue;
+    if (ex.type === 'quiz') continue;
     lessonsWithEx++;
     let db;
     try {

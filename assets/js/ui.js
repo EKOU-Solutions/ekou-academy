@@ -129,6 +129,19 @@
       l.tasks[i] = true;
       saveProgress(p);
     },
+    markAnswer(slug, i, answer) {
+      const p = loadProgress();
+      const l = p[slug] || (p[slug] = { tasks: {}, done: false });
+      l.answers = l.answers || {};
+      l.answers[i] = answer;
+      saveProgress(p);
+    },
+    unmarkTask(slug, i) {
+      const p = loadProgress();
+      const l = p[slug] || (p[slug] = { tasks: {}, done: false });
+      if (l.tasks) delete l.tasks[i];
+      saveProgress(p);
+    },
     markDone(slug) {
       const p = loadProgress();
       const l = p[slug] || (p[slug] = { tasks: {}, done: false });
