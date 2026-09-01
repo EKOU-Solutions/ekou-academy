@@ -11,13 +11,25 @@
 
   /* ---------------- tema ---------------- */
   const THEME_KEY = 'sqltotal:theme';
-  function applyTheme(t) {
+  function applyTheme(t, persist = false) {
     document.documentElement.setAttribute('data-theme', t);
-    try { localStorage.setItem(THEME_KEY, t); } catch (e) { }
+    if (persist) {
+      try { localStorage.setItem(THEME_KEY, t); } catch (e) { }
+    }
   }
-  applyTheme((() => { try { return localStorage.getItem(THEME_KEY) || 'dark'; } catch (e) { return 'dark'; } })());
+  function preferredTheme() {
+    try {
+      const saved = localStorage.getItem(THEME_KEY);
+      if (saved === 'light' || saved === 'dark') return saved;
+    } catch (e) { }
+    try {
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
+    } catch (e) { }
+    return 'light';
+  }
+  applyTheme(preferredTheme());
   document.getElementById('themeToggle').addEventListener('click', () => {
-    applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark', true);
   });
 
   /* ---------------- idioma ---------------- */
@@ -54,9 +66,16 @@
     sidebarNav.textContent = '';
     const q = (filter || '').trim().toLowerCase();
     const progress = Progress.all();
+    const routeHash = (location.hash || '#/').replace(/^#\/?/, '');
+    const currentLesson = routeHash === 'referencia' ? CURSO.get('chuleta-sql') : routeHash && CURSO.get(routeHash);
+    const courseSection = routeHash === 'java' ? 'java'
+      : routeHash === 'sql' || routeHash === 'playground' || (currentLesson && currentLesson.section !== 'java') ? 'sql'
+      : currentLesson && currentLesson.section === 'java' ? 'java' : null;
     let shown = 0;
 
     CURSO.bySection().forEach(group => {
+      if (courseSection === 'java' && group.section.id !== 'java') return;
+      if (courseSection === 'sql' && group.section.id === 'java') return;
       const items = group.items.filter(l =>
         !q ||
         L(l, 'title').toLowerCase().includes(q) ||
@@ -123,42 +142,103 @@
 
   /* ---------------- vistas ---------------- */
   function renderHome() {
-    const total = CURSO.ordered().length;
-    const conEjercicio = CURSO.ordered().filter(l => l.exercise).length;
-    const wrap = el('div', { class: 'page home' });
+    const lessons = CURSO.ordered();
+    const progress = Progress.all();
+    const total = lessons.length;
+    const completed = Progress.countDone();
+    const pending = lessons.find(l => !(progress[l.slug] && progress[l.slug].done)) || lessons[0];
+    const pendingCourse = pending && pending.section === 'java' ? '#/java' : '#/sql';
+    const subjects = [
+      {
+        id: 'sql', className: 'subject-sql', index: '01', href: '#/sql',
+        lessons: lessons.filter(l => l.section !== 'java'),
+        name: t('home.subject.sqlName'),
+        label: t('home.subject.sqlLabel'),
+        body: t('home.subject.sqlBody')
+      },
+      {
+        id: 'java', className: 'subject-java', index: '02', href: '#/java',
+        lessons: lessons.filter(l => l.section === 'java'),
+        name: t('home.subject.javaName'),
+        label: t('home.subject.javaLabel'),
+        body: t('home.subject.javaBody')
+      }
+    ];
 
-    wrap.appendChild(el('section', { class: 'hero' },
+    const wrap = el('div', { class: 'page home home-dashboard' });
+    const hero = el('section', { class: 'dashboard-hero' });
+    hero.appendChild(el('div', { class: 'dashboard-hero-copy' },
+      el('div', { class: 'eyebrow' }, t('home.eyebrow')),
       el('h1', {}, t('home.title')),
       el('p', { class: 'lead' }, t('home.lead')),
       el('div', { class: 'hero-actions' },
-        el('a', { class: 'btn btn-primary btn-lg', href: '#/' + CURSO.ordered()[0].slug }, t('home.start')),
-        el('a', { class: 'btn btn-ghost btn-lg', href: '#/playground' }, t('home.openPlayground'))),
-      el('div', { class: 'hero-stats' },
-        el('div', { class: 'stat' }, el('b', {}, String(total)), el('span', {}, t('stats.topics'))),
-        el('div', { class: 'stat' }, el('b', {}, String(conEjercicio)), el('span', {}, t('stats.withExercises'))),
-        el('div', { class: 'stat' }, el('b', {}, String(Object.keys(window.DATASETS).length)), el('span', {}, t('stats.datasets'))),
-        el('div', { class: 'stat' }, el('b', {}, 'SQLite'), el('span', {}, t('stats.engine'))))
-    ));
+        el('a', { class: 'btn btn-primary btn-lg', href: pendingCourse }, t('home.primaryCta')),
+        el('a', { class: 'btn btn-ghost btn-lg', href: '#subjects' }, t('home.secondaryCta')))));
+    wrap.appendChild(hero);
 
-    const progress = Progress.all();
-    CURSO.bySection().forEach(group => {
-      const sec = el('section', { class: 'home-section' });
-      sec.appendChild(el('h2', {}, t('section.' + group.section.id + '.name'),
-        el('small', {}, t('section.' + group.section.id + '.hint'))));
-      const grid = el('div', { class: 'card-grid' });
-      group.items.forEach(l => {
-        const done = progress[l.slug] && progress[l.slug].done;
-        grid.appendChild(el('a', { class: 'card' + (done ? ' done' : ''), href: '#/' + l.slug },
-          el('div', { class: 'card-top' },
-            el('span', { class: 'card-kind' }, t(l.source === 'extra' ? 'card.extra' : 'card.sqlbolt')),
-            l.exercise ? el('span', { class: 'card-badge' }, t('card.practice')) : null,
-            done ? el('span', { class: 'card-done' }, '✓') : null),
-          el('h3', {}, L(l, 'shortTitle')),
-          el('p', {}, L(l, 'summary') || '')));
-      });
-      sec.appendChild(grid);
-      wrap.appendChild(sec);
+    const layout = el('div', { class: 'dashboard-layout' });
+    const mainColumn = el('div', { class: 'dashboard-main' });
+    const subjectPanel = el('section', { class: 'dashboard-panel', id: 'subjects' });
+    subjectPanel.appendChild(el('div', { class: 'panel-heading' },
+      el('div', {}, el('div', { class: 'eyebrow' }, t('home.subjectsKicker')), el('h2', {}, t('home.subjectsTitle'))),
+      el('p', {}, t('home.subjectsBody'))));
+    const subjectGrid = el('div', { class: 'subject-grid' });
+    subjects.forEach(subject => {
+      const subjectDone = subject.lessons.filter(l => progress[l.slug] && progress[l.slug].done).length;
+      const first = subject.lessons.find(l => !(progress[l.slug] && progress[l.slug].done)) || subject.lessons[0];
+      const percentage = subject.lessons.length ? Math.round(subjectDone / subject.lessons.length * 100) : 0;
+      subjectGrid.appendChild(el('a', { class: 'subject-card ' + subject.className, href: subject.href },
+        el('div', { class: 'subject-card-top' },
+          el('span', { class: 'subject-index' }, subject.index),
+          el('span', { class: 'subject-label' }, subject.label),
+          el('span', { class: 'subject-arrow' }, '↗')),
+        el('h3', {}, subject.name),
+        el('p', {}, subject.body),
+        el('div', { class: 'subject-card-meta' },
+          el('span', {}, subject.lessons.length + ' ' + t('home.stats.topicUnit')),
+          el('span', {}, subjectDone + '/' + subject.lessons.length + ' ' + t('home.stats.doneUnit'))),
+        el('div', { class: 'subject-progress' }, el('span', { style: 'width:' + percentage + '%' }))));
     });
+    subjectPanel.appendChild(subjectGrid);
+    mainColumn.appendChild(subjectPanel);
+
+    const methodPanel = el('section', { class: 'dashboard-panel method-panel' });
+    methodPanel.appendChild(el('div', { class: 'panel-heading' },
+      el('div', {}, el('div', { class: 'eyebrow' }, t('home.methodKicker')), el('h2', {}, t('home.methodTitle'))),
+      el('p', {}, t('home.methodBody'))));
+    const methodGrid = el('div', { class: 'method-grid' });
+    [['01', 'home.method.oneTitle', 'home.method.oneBody'], ['02', 'home.method.twoTitle', 'home.method.twoBody'], ['03', 'home.method.threeTitle', 'home.method.threeBody']]
+      .forEach(([index, title, body]) => methodGrid.appendChild(el('article', { class: 'method-step' },
+        el('span', {}, index), el('h3', {}, t(title)), el('p', {}, t(body)))));
+    methodPanel.appendChild(methodGrid);
+    mainColumn.appendChild(methodPanel);
+
+    const sideColumn = el('aside', { class: 'dashboard-side' });
+    const progressPanel = el('section', { class: 'dashboard-panel progress-panel' });
+    const progressPercent = total ? Math.round(completed / total * 100) : 0;
+    progressPanel.append(
+      el('div', { class: 'eyebrow' }, t('home.progressKicker')),
+      el('h2', {}, t('home.progressTitle')),
+      el('div', { class: 'progress-number' }, el('strong', {}, progressPercent + '%'), el('span', {}, completed + '/' + total)),
+      el('div', { class: 'dashboard-progress' }, el('span', { style: 'width:' + progressPercent + '%' })),
+      el('p', {}, t('home.progressBody'))
+    );
+    if (pending) progressPanel.appendChild(el('a', { class: 'btn btn-primary', href: '#/' + pending.slug }, t('home.continueCta')));
+    sideColumn.appendChild(progressPanel);
+
+    const futurePanel = el('section', { class: 'dashboard-panel future-panel' });
+    futurePanel.append(
+      el('div', { class: 'eyebrow' }, t('home.futureKicker')),
+      el('h2', {}, t('home.futureTitle')),
+      el('p', {}, t('home.futureBody')),
+      el('div', { class: 'future-tags' },
+        el('span', {}, t('home.future.spring')),
+        el('span', {}, t('home.future.apis')),
+        el('span', {}, t('home.future.architecture')),
+        el('span', {}, t('home.future.systems'))));
+    sideColumn.appendChild(futurePanel);
+    layout.append(mainColumn, sideColumn);
+    wrap.appendChild(layout);
 
     wrap.appendChild(el('section', { class: 'home-note' },
       el('h2', {}, t('home.aboutTitle')),
@@ -168,14 +248,71 @@
     return wrap;
   }
 
+  function renderCourseCard(lesson, progress) {
+    const done = progress[lesson.slug] && progress[lesson.slug].done;
+    return el('a', { class: 'card' + (done ? ' done' : ''), href: '#/' + lesson.slug },
+      el('div', { class: 'card-top' },
+        el('span', { class: 'card-kind' }, lesson.source === 'extra' ? t('card.extra') : t('card.sqlbolt')),
+        lesson.exercise ? el('span', { class: 'card-badge' }, t('card.practice')) : null,
+        done ? el('span', { class: 'card-done', title: t('card.doneTitle'), 'aria-label': t('card.doneTitle') }, '✓') : null),
+      el('h3', {}, L(lesson, 'shortTitle')),
+      el('p', {}, L(lesson, 'summary')));
+  }
+
+  function renderCourseLanding(courseId) {
+    const isSql = courseId === 'sql';
+    const lessons = CURSO.ordered().filter(lesson => isSql ? lesson.section !== 'java' : lesson.section === 'java');
+    const progress = Progress.all();
+    const completed = lessons.filter(lesson => progress[lesson.slug] && progress[lesson.slug].done).length;
+    const withExercises = lessons.filter(lesson => lesson.exercise).length;
+    const start = lessons.find(lesson => !(progress[lesson.slug] && progress[lesson.slug].done)) || lessons[0];
+    const groups = CURSO.bySection().filter(group => isSql ? group.section.id !== 'java' : group.section.id === 'java');
+    const wrap = el('div', { class: 'page home course-landing course-' + courseId });
+    wrap.appendChild(el('nav', { class: 'breadcrumbs', 'aria-label': t('nav.breadcrumbs') },
+      el('a', { href: '#/' }, t('nav.home')),
+      el('span', { 'aria-hidden': 'true' }, '›'),
+      el('span', { 'aria-current': 'page' }, isSql ? t('nav.sql') : t('nav.java'))));
+
+    const hero = el('section', { class: 'hero' },
+      el('h1', {}, t('course.' + courseId + '.title')),
+      el('p', { class: 'lead' }, t('course.' + courseId + '.lead')));
+    const actions = [
+      el('a', { class: 'btn btn-primary btn-lg', href: start ? '#/' + start.slug : '#/' }, t('course.start'))
+    ];
+    if (isSql) actions.push(el('a', { class: 'btn btn-ghost btn-lg', href: '#/playground' }, t('course.playground')));
+    hero.appendChild(el('div', { class: 'hero-actions' }, actions));
+    const statItems = isSql
+      ? [[lessons.length, 'course.stats.topics'], [withExercises, 'course.stats.exercises'], [completed, 'course.stats.completed'], [3, 'course.stats.datasets'], ['SQLite', 'course.stats.engine']]
+      : [[lessons.length, 'course.stats.topics'], [withExercises, 'course.stats.exercises'], [completed, 'course.stats.completed'], ['JDK', 'course.stats.language'], ['JVM', 'course.stats.runtime']];
+    hero.appendChild(el('div', { class: 'hero-stats' }, statItems.map(([value, label]) =>
+      el('div', { class: 'stat' }, el('b', {}, String(value)), el('span', {}, t(label))))));
+    wrap.appendChild(hero);
+
+    groups.forEach(group => {
+      const section = el('section', { class: 'home-section' });
+      section.appendChild(el('h2', {},
+        t('section.' + group.section.id + '.name'),
+        el('small', {}, t('section.' + group.section.id + '.hint'))));
+      section.appendChild(el('div', { class: 'card-grid' }, group.items.map(lesson => renderCourseCard(lesson, progress))));
+      wrap.appendChild(section);
+    });
+
+    const noteTitle = isSql ? t('home.aboutTitle') : t('course.java.noteTitle');
+    const noteBody = isSql ? t('home.aboutBody') : t('course.java.noteBody');
+    wrap.appendChild(el('section', { class: 'home-note' }, el('h2', {}, noteTitle), el('p', { html: noteBody })));
+    return wrap;
+  }
+
   function renderLesson(lesson) {
     const wrap = el('div', { class: 'page lesson-page' });
     const prev = CURSO.prev(lesson.slug), next = CURSO.next(lesson.slug);
     const section = CURSO.SECTIONS.find(s => s.id === lesson.section);
+    const courseId = lesson.section === 'java' ? 'java' : 'sql';
 
-    wrap.appendChild(el('div', { class: 'breadcrumbs' },
-      el('a', { href: '#/' }, t('lesson.crumbCourse')), el('span', {}, '›'),
-      el('span', {}, section ? t('section.' + section.id + '.name') : ''),
+    wrap.appendChild(el('nav', { class: 'breadcrumbs', 'aria-label': t('nav.breadcrumbs') },
+      el('a', { href: '#/' }, t('nav.home')), el('span', { 'aria-hidden': 'true' }, '›'),
+      el('a', { href: '#/' + courseId }, t('nav.' + courseId)), el('span', { 'aria-hidden': 'true' }, '›'),
+      el('span', { 'aria-current': 'page' }, section ? t('section.' + section.id + '.name') : ''),
       lesson.source === 'extra'
         ? el('span', { class: 'pill pill-extra' }, t('card.extra'))
         : el('span', { class: 'pill' }, t('card.sqlbolt'))));
@@ -224,9 +361,13 @@
     if (currentView && currentView.destroy) { try { currentView.destroy(); } catch (e) { } }
     currentView = null;
     const hash = (location.hash || '#/').replace(/^#\/?/, '');
+    const currentLesson = hash && CURSO.get(hash);
+    const isHome = !hash || hash === 'subjects';
+    document.body.classList.toggle('is-home', isHome);
     main.textContent = '';
     let view;
-    if (!hash) view = renderHome();
+    if (isHome) view = renderHome();
+    else if (hash === 'sql' || hash === 'java') view = renderCourseLanding(hash);
     else if (hash === 'playground') view = renderPlayground();
     else if (hash === 'referencia') {
       const ref = CURSO.get('chuleta-sql');
@@ -237,14 +378,21 @@
     }
     main.appendChild(view);
     window.scrollTo(0, 0);
+    buildSidebar(document.getElementById('lessonSearch').value);
     highlightActive();
     sidebar.classList.remove('open'); scrim.classList.remove('show');
-    document.querySelectorAll('.topnav a').forEach(a => a.classList.remove('active'));
-    const navKey = hash === 'playground' ? 'playground' : hash === 'referencia' ? 'referencia' : 'curso';
-    const navEl = document.querySelector(`.topnav a[data-nav="${navKey}"]`);
-    if (navEl) navEl.classList.add('active');
-    const cur = hash && CURSO.get(hash);
-    document.title = (cur ? L(cur, 'shortTitle') + ' — ' : '') + t('site.title');
+    document.querySelectorAll('.topnav a').forEach(a => { a.classList.remove('active'); a.removeAttribute('aria-current'); });
+    const navKey = isHome ? 'home'
+      : hash === 'playground' ? 'playground'
+      : hash === 'java' || (currentLesson && currentLesson.section === 'java') ? 'java'
+      : hash === 'sql' || hash === 'playground' || hash === 'referencia' || (currentLesson && currentLesson.section !== 'java') ? 'sql'
+      : null;
+    const navEl = navKey && document.querySelector(`.topnav a[data-nav="${navKey}"]`);
+    if (navEl) { navEl.classList.add('active'); navEl.setAttribute('aria-current', 'page'); }
+    if (hash === 'subjects') setTimeout(() => document.getElementById('subjects')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0);
+    const cur = hash === 'referencia' ? CURSO.get('chuleta-sql') : currentLesson;
+    const pageTitle = hash === 'sql' ? t('course.sql.title') : hash === 'java' ? t('course.java.title') : cur ? L(cur, 'shortTitle') : '';
+    document.title = (pageTitle ? pageTitle + ' — ' : '') + t('site.title');
   }
 
   window.addEventListener('hashchange', route);

@@ -13,7 +13,7 @@
     return hints;
   }
 
-  function build(lesson, host) {
+  function buildSql(lesson, host) {
     const ex = lesson.exercise;
     const dataset = window.DATASETS[ex.dataset];
     let db = null;
@@ -276,6 +276,174 @@
 
     setTimeout(() => editor.refresh(), 0);
     return { destroy() { try { db.close(); } catch (e) { } } };
+  }
+
+  function buildQuiz(lesson, host) {
+    const ex = lesson.exercise;
+    const root = el('div', { class: 'exercise quiz-exercise' });
+    const left = el('div', { class: 'ex-left quiz-main' });
+    const right = el('div', { class: 'ex-right' });
+    root.append(left, right);
+    host.appendChild(root);
+
+    const saved = Progress.lesson(lesson.slug);
+    const answers = Object.assign({}, saved.answers || {});
+    const passed = ex.tasks.map((task, i) => !!(saved.tasks && saved.tasks[i]));
+    const feedbackByTask = {};
+    let current = 0;
+    let complete = !!saved.done;
+
+    const questionCounter = el('div', { class: 'quiz-question-counter' });
+    const question = el('div', { class: 'quiz-question', role: 'heading', 'aria-level': '2' });
+    const options = el('fieldset', { class: 'quiz-options' });
+    const feedback = el('div', { class: 'ex-message' });
+    const actions = el('div', { class: 'ex-actions quiz-actions' });
+    const checkBtn = el('button', { class: 'btn btn-primary' }, t('quiz.check'));
+    const nextBtn = el('button', { class: 'btn btn-ghost' }, t('quiz.next'));
+    const progressLabel = el('span', { class: 'quiz-progress' });
+    actions.append(checkBtn, nextBtn, progressLabel);
+    left.append(questionCounter, question, options, feedback, actions);
+
+    const tasksTitle = el('div', { class: 'tasks-title' }, I18N.exerciseTitle(lesson));
+    const criterion = ex.passingScore < 1
+      ? el('div', { class: 'quiz-criterion' }, t('quiz.examCriterion', {
+        need: Quiz.requiredCorrect(ex.tasks.length, ex.passingScore),
+        total: ex.tasks.length,
+        percent: Math.round(ex.passingScore * 100)
+      }))
+      : null;
+    const tasksList = el('ol', { class: 'tasks-list' });
+    const continueBtn = el('a', { class: 'btn btn-continue disabled' }, t('ex.continueDisabled'));
+    right.append(tasksTitle);
+    if (criterion) right.appendChild(criterion);
+    right.append(tasksList, continueBtn);
+
+    const taskNodes = ex.tasks.map((task, i) => {
+      const li = el('li', { class: 'task' });
+      li.appendChild(el('div', { class: 'task-text', html: I18N.taskField(lesson, i, 'text') }));
+      li.addEventListener('click', () => setCurrent(i));
+      tasksList.appendChild(li);
+      return li;
+    });
+
+    function setFeedback(html, kind) {
+      feedback.className = 'ex-message ' + (kind ? 'msg-' + kind : '');
+      feedback.innerHTML = html || '';
+    }
+
+    function updateProgress() {
+      const got = Quiz.score(ex.tasks, answers);
+      progressLabel.textContent = t('quiz.progress', { done: got, total: ex.tasks.length });
+      taskNodes.forEach((node, i) => node.classList.toggle('done', passed[i] || complete));
+    }
+
+    function finish() {
+      if (complete) return;
+      complete = true;
+      const got = Quiz.score(ex.tasks, answers);
+      const total = ex.tasks.length;
+      Progress.markDone(lesson.slug);
+      const nxt = CURSO.next(lesson.slug);
+      continueBtn.classList.remove('disabled');
+      continueBtn.textContent = nxt ? t('ex.continueTo', { title: I18N.field(nxt, 'shortTitle') }) : t('ex.courseDone');
+      if (nxt) continueBtn.setAttribute('href', '#/' + nxt.slug);
+      checkBtn.disabled = true;
+      nextBtn.disabled = true;
+      setFeedback(t('quiz.passed', { got, total, percent: Math.round(got / total * 100) }), 'ok');
+      toast(t('toast.lessonDone', { title: I18N.field(lesson, 'shortTitle') }), 'ok');
+      updateProgress();
+    }
+
+    function showSavedFeedback() {
+      const old = feedbackByTask[current];
+      if (old) setFeedback(old.html, old.kind);
+      else if (complete) {
+        const got = Quiz.score(ex.tasks, answers), total = ex.tasks.length;
+        setFeedback(t('quiz.passed', { got, total, percent: Math.round(got / total * 100) }), 'ok');
+      } else setFeedback('', '');
+    }
+
+    function renderQuestion() {
+      const task = ex.tasks[current];
+      questionCounter.textContent = t('quiz.question', { current: current + 1, total: ex.tasks.length });
+      question.innerHTML = I18N.taskField(lesson, current, 'text');
+      options.textContent = '';
+      const optionTexts = I18N.taskField(lesson, current, 'options') || task.options || [];
+      const name = lesson.slug + '-answer';
+      optionTexts.forEach((optionText, i) => {
+        const id = name + '-' + i;
+        const radio = el('input', { type: 'radio', name, value: i, id });
+        if (answers[current] != null && String(answers[current]) === String(i)) radio.checked = true;
+        const label = el('label', { class: 'quiz-option', for: id }, radio,
+          el('span', { html: optionText }));
+        options.appendChild(label);
+      });
+      taskNodes.forEach((node, i) => node.classList.toggle('active', i === current));
+      nextBtn.disabled = current === ex.tasks.length - 1 || complete;
+      checkBtn.disabled = complete;
+      showSavedFeedback();
+    }
+
+    function setCurrent(i) {
+      current = i;
+      renderQuestion();
+    }
+
+    function checkCurrent() {
+      if (complete) return;
+      const selected = options.querySelector('input:checked');
+      if (!selected) {
+        setFeedback(t('quiz.select'), 'warn');
+        return;
+      }
+      const answer = Number(selected.value);
+      const task = ex.tasks[current];
+      answers[current] = answer;
+      Progress.markAnswer(lesson.slug, current, answer);
+      const ok = Quiz.isCorrect(task, answer);
+      if (ok) {
+        passed[current] = true;
+        Progress.markTask(lesson.slug, current);
+      } else {
+        passed[current] = false;
+        Progress.unmarkTask(lesson.slug, current);
+      }
+      const explanation = I18N.taskField(lesson, current, 'explanation') || task.explanation || '';
+      const html = (ok ? t('quiz.correct') : t('quiz.incorrect')) +
+        (explanation ? '<br><span class="quiz-explanation">' + explanation + '</span>' : '');
+      feedbackByTask[current] = { html, kind: ok ? 'ok' : 'warn' };
+      setFeedback(html, ok ? 'ok' : 'warn');
+      updateProgress();
+
+      const allAnswered = ex.tasks.every((_, i) => answers[i] != null);
+      if (allAnswered && Quiz.passed(ex.tasks, answers, ex.passingScore)) finish();
+      else if (allAnswered && ex.passingScore < 1) {
+        const got = Quiz.score(ex.tasks, answers), total = ex.tasks.length;
+        setFeedback(t('quiz.failed', {
+          need: Quiz.requiredCorrect(total, ex.passingScore), total
+        }) + ' ' + t('quiz.score', { got, total }), 'warn');
+      }
+    }
+
+    checkBtn.addEventListener('click', checkCurrent);
+    nextBtn.addEventListener('click', () => setCurrent(Math.min(current + 1, ex.tasks.length - 1)));
+
+    if (complete) taskNodes.forEach(node => node.classList.add('done'));
+    renderQuestion();
+    updateProgress();
+    if (complete) {
+      const nxt = CURSO.next(lesson.slug);
+      continueBtn.classList.remove('disabled');
+      continueBtn.textContent = nxt ? t('ex.continueTo', { title: I18N.field(nxt, 'shortTitle') }) : t('ex.courseDone');
+      if (nxt) continueBtn.setAttribute('href', '#/' + nxt.slug);
+    }
+    return { destroy() {} };
+  }
+
+  function build(lesson, host) {
+    return lesson.exercise && lesson.exercise.type === 'quiz'
+      ? buildQuiz(lesson, host)
+      : buildSql(lesson, host);
   }
 
   window.Exercise = { build };

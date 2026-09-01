@@ -1,10 +1,10 @@
 {
   "name": "ekou-academy",
   "version": "1.0.0",
-  "description": "EKOU Academy — curso interactivo de SQL (copia ampliada de SQLBolt) con playground SQLite en el navegador",
+  "description": "EKOU Academy — curso interactivo de SQL y Java (copia ampliada de SQLBolt) con playground SQLite en el navegador",
   "scripts": {
     "start": "python3 -m http.server 4173",
-    "test": "node tools/test-exercises.js && node tools/test-negative.js && node tools/test-i18n.js",
+    "test": "node tools/test-exercises.js && node tools/test-negative.js && node tools/test-java.js && node tools/test-home.js && node tools/test-i18n.js",
     "vendor": "node tools/vendor.js"
   },
   "keywords": [],

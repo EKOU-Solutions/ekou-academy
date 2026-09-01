@@ -12,6 +12,7 @@ const root=path.join(__dirname,'..');const read=f=>fs.readFileSync(path.join(roo
   let checked=0, falsePositives=0;
   for(const lesson of CURSO.ordered()){
     const ex=lesson.exercise; if(!ex) continue;
+    if(ex.type==='quiz') continue;
     for(let i=0;i<ex.tasks.length;i++){
       const task=ex.tasks[i];
       // base limpia por tarea: aplica las soluciones anteriores

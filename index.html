@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>EKOU Academy — Curso interactivo de SQL con Playground</title>
-<meta name="description" content="Curso interactivo de SQL en español: consultas, JOINs, agregados, DML, DDL, vistas, índices, transacciones, CTEs, funciones de ventana, triggers, procedimientos almacenados y funciones. Incluye un playground SQL en el navegador.">
+<title>EKOU Academy — Notas interactivas de aprendizaje</title>
+<meta name="description" content="Notas interactivas de aprendizaje en público: un recorrido de Senior Full-Stack Engineer a Staff Frontend Platform Engineer, con materias como SQL y Java.">
 <link rel="icon" type="image/svg+xml" href="assets/img/ekou-logo.svg">
 <link rel="stylesheet" href="assets/vendor/codemirror.css">
 <link rel="stylesheet" href="assets/vendor/cm-show-hint.css">
 <link rel="stylesheet" href="assets/css/styles.css">
 </head>
-<body>
+<body class="is-home">
 
 <header class="topbar">
   <button class="icon-btn nav-toggle" id="navToggle" data-i18n-label="nav.menu" aria-label="Abrir menú">☰</button>
@@ -18,9 +18,10 @@
     <img class="brand-mark" src="assets/img/ekou-logo.svg" alt="EKOU" width="41" height="43">
     <span class="brand-text">EKOU <b>Academy</b></span>
   </a>
-  <nav class="topnav">
-    <a href="#/" data-nav="curso" data-i18n="nav.course">Curso</a>
-    <a href="#/referencia" data-nav="referencia" data-i18n="nav.reference">Referencia</a>
+  <nav class="topnav" data-i18n-label="nav.primary" aria-label="Navegación principal">
+    <a href="#/" data-nav="home" data-i18n="nav.home">Inicio</a>
+    <a href="#/sql" data-nav="sql" data-i18n="nav.sql">SQL</a>
+    <a href="#/java" data-nav="java" data-i18n="nav.java">Java</a>
     <a href="#/playground" data-nav="playground" class="cta" data-i18n="nav.playground">Playground</a>
   </nav>
   <div class="topbar-right">
@@ -105,6 +106,8 @@
 <script src="data/lessons/36-normalization.js"></script>
 <script src="data/lessons/37-performance.js"></script>
 <script src="data/lessons/35-security-users.js"></script>
+<script src="data/lessons/39-java-basics.js"></script>
+<script src="data/lessons/40-java-basics-exam.js"></script>
 <script src="data/lessons/38-reference.js"></script>
 
 <script src="data/i18n/en-01-basics.js"></script>
@@ -116,10 +119,12 @@
 <script src="data/i18n/en-07-programming.js"></script>
 <script src="data/i18n/en-08-design.js"></script>
 <script src="data/i18n/en-09-reference.js"></script>
+<script src="data/i18n/en-10-java.js"></script>
 
 <script src="assets/js/engine.js"></script>
 <script src="assets/js/checker.js"></script>
 <script src="assets/js/ui.js"></script>
+<script src="assets/js/quiz.js"></script>
 <script src="assets/js/exercise.js"></script>
 <script src="assets/js/playground.js"></script>
 <script src="assets/js/app.js"></script>

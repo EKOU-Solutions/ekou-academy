@@ -11,6 +11,7 @@
     { id: 'objetos', name: 'Objetos de base de datos', hint: 'Vistas, índices, restricciones' },
     { id: 'programacion', name: 'Programación en la base de datos', hint: 'Transacciones, triggers, procedimientos' },
     { id: 'diseno', name: 'Diseño y rendimiento', hint: 'Normalización, planes de ejecución' },
+    { id: 'java', name: 'Java', hint: 'JDK, JVM y ejecución' },
     { id: 'referencia', name: 'Referencia', hint: 'Chuleta y equivalencias entre motores' }
   ];
 
