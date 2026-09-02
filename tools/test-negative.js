@@ -2,12 +2,12 @@
 const fs=require('fs'),path=require('path'),vm=require('vm'),initSqlJs=require('sql.js');
 const root=path.join(__dirname,'..');const read=f=>fs.readFileSync(path.join(root,f),'utf8');
 (async()=>{
-  const SQL=await initSqlJs({locateFile:f=>path.join(root,'assets/vendor',f)});
+const SQL=await initSqlJs({locateFile:f=>path.join(root,'public/assets/vendor',f)});
   const sb={console,initSqlJs:()=>Promise.resolve(SQL),localStorage:{getItem:()=>null,setItem(){}},document:{documentElement:{setAttribute(){}},dispatchEvent(){}}};sb.window=sb;vm.createContext(sb);
-  ['data/datasets.js','assets/js/i18n.js','assets/js/registry.js','assets/js/engine.js','assets/js/checker.js'].forEach(f=>vm.runInContext(read(f),sb,{filename:f}));
+['public/data/datasets.js','public/assets/js/i18n.js','public/assets/js/registry.js','public/assets/js/engine.js','public/assets/js/checker.js'].forEach(f=>vm.runInContext(read(f),sb,{filename:f}));
   await sb.Engine.ready();
-  fs.readdirSync(path.join(root,'data/lessons')).sort().forEach(f=>vm.runInContext(read('data/lessons/'+f),sb,{filename:f}));
-  fs.readdirSync(path.join(root,'data/i18n')).sort().forEach(f=>vm.runInContext(read('data/i18n/'+f),sb,{filename:f}));
+fs.readdirSync(path.join(root,'public/data/lessons')).sort().forEach(f=>vm.runInContext(read('public/data/lessons/'+f),sb,{filename:f}));
+fs.readdirSync(path.join(root,'public/data/i18n')).sort().forEach(f=>vm.runInContext(read('public/data/i18n/'+f),sb,{filename:f}));
   const {CURSO,Engine,Checker}=sb;
   let checked=0, falsePositives=0;
   for(const lesson of CURSO.ordered()){

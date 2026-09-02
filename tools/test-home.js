@@ -11,14 +11,14 @@ const sandbox = {
 };
 sandbox.window = sandbox;
 vm.createContext(sandbox);
-vm.runInContext(read('assets/js/i18n.js'), sandbox, { filename: 'assets/js/i18n.js' });
-vm.runInContext(read('assets/js/registry.js'), sandbox, { filename: 'assets/js/registry.js' });
-fs.readdirSync(path.join(root, 'data/lessons')).sort().forEach(file =>
-  vm.runInContext(read('data/lessons/' + file), sandbox, { filename: file }));
+vm.runInContext(read('public/assets/js/i18n.js'), sandbox, { filename: 'public/assets/js/i18n.js' });
+vm.runInContext(read('public/assets/js/registry.js'), sandbox, { filename: 'public/assets/js/registry.js' });
+fs.readdirSync(path.join(root, 'public/data/lessons')).sort().forEach(file =>
+  vm.runInContext(read('public/data/lessons/' + file), sandbox, { filename: file }));
 
-const app = read('assets/js/app.js');
-const css = read('assets/css/styles.css');
-const index = read('index.html');
+const app = read('public/assets/js/app.js');
+const css = read('public/assets/css/styles.css');
+const index = read('src/pages/index.astro');
 const { I18N, CURSO } = sandbox;
 let failures = 0;
 function assert(condition, message) {

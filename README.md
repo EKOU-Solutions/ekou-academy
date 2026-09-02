@@ -5,37 +5,45 @@ el original no cubre (vistas, índices, restricciones, transacciones, disparador
 almacenados, funciones, funciones de ventana, CTEs, normalización, rendimiento y seguridad), más una sección
 de fundamentos de Java, JDK y JVM, y con un **Playground SQL** para practicar cualquiera de ellos.
 
-Todo se ejecuta en el navegador con SQLite compilado a WebAssembly (`sql.js`). No hay backend, ni build,
-ni base de datos que instalar.
+Todo se ejecuta en el navegador con SQLite compilado a WebAssembly (`sql.js`). No hay backend ni base de datos
+que instalar. El proyecto se está migrando progresivamente a Astro: Astro ya construye la aplicación y deja
+preparados MDX, React y las colecciones de contenido, mientras el runtime actual se conserva como puente para
+no alterar la interfaz.
 
 ## Arrancar
 
 ```bash
-npm run start
+npm run dev
 ```
 
-Y abre <http://localhost:4173>. Cualquier servidor estático vale; lo que **no** funciona es abrir
-`index.html` con `file://`, porque el navegador bloquea la carga del `.wasm`.
+Y abre <http://localhost:4321>. `npm run start` mantiene el puerto histórico `4173`; `npm run build` genera la
+salida estática en `dist/` para Vercel. Lo que **no** funciona es abrir la página con `file://`, porque el
+navegador bloquea la carga del `.wasm`.
 
 ## Qué hay dentro
 
 | Ruta | Contenido |
 |---|---|
-| `index.html` | Única página; carga los datos y los módulos en orden |
-| `assets/js/i18n.js` | Catálogo de cadenas de interfaz y traducciones del temario |
-| `assets/js/registry.js` | Registro del temario y sus secciones |
-| `assets/js/engine.js` | SQLite en el navegador: crear bases, ejecutar scripts, leer el esquema, funciones de usuario |
-| `assets/js/checker.js` | Verificación de las tareas de cada ejercicio |
-| `assets/js/exercise.js` | Widget de ejercicio (editor + resultados + tareas) |
-| `assets/js/quiz.js` | Corrección y puntuación de quizzes conceptuales |
-| `assets/js/playground.js` | Playground SQL |
-| `assets/js/app.js` | Router, barra lateral, temas claro/oscuro, progreso |
-| `assets/js/ui.js` | Tabla de resultados, editor, toasts, progreso en `localStorage` |
-| `data/datasets.js` | Las tres bases de ejemplo |
-| `data/lessons/*.js` | Un archivo por tema: texto + ejercicio o quiz (español) |
-| `data/i18n/en-*.js` | Traducción al inglés de cada tema y de sus tareas |
-| `data/raw/` | El material scrapeado tal cual (ver más abajo) |
+| `src/pages/index.astro` | Página Astro que conserva el shell actual durante la migración |
+| `src/content.config.ts` | Colección tipada preparada para lecciones Markdown/MDX |
+| `src/content/lessons/` | Destino de las lecciones MDX de la siguiente fase |
+| `public/assets/js/i18n.js` | Catálogo de cadenas de interfaz y traducciones del temario |
+| `public/assets/js/registry.js` | Registro del temario y sus secciones |
+| `public/assets/js/engine.js` | SQLite en el navegador: crear bases, ejecutar scripts, leer el esquema, funciones de usuario |
+| `public/assets/js/checker.js` | Verificación de las tareas de cada ejercicio |
+| `public/assets/js/exercise.js` | Widget de ejercicio (editor + resultados + tareas) |
+| `public/assets/js/quiz.js` | Corrección y puntuación de quizzes conceptuales |
+| `public/assets/js/playground.js` | Playground SQL |
+| `public/assets/js/app.js` | Router, barra lateral, temas claro/oscuro, progreso |
+| `public/assets/js/ui.js` | Tabla de resultados, editor, toasts, progreso en `localStorage` |
+| `public/data/datasets.js` | Las tres bases de ejemplo |
+| `public/data/lessons/*.js` | Runtime legado conservado como puente: texto + ejercicio o quiz (español) |
+| `public/data/i18n/en-*.js` | Traducción al inglés de cada tema y de sus tareas |
+| `public/data/raw/` | El material scrapeado tal cual (ver más abajo) |
 | `tools/` | Scraper, copia de dependencias y pruebas |
+
+La configuración de Astro vive en `astro.config.mjs` y la de despliegue en `vercel.json`. Los recursos del
+runtime están bajo `public/` para mantener sus URLs públicas (`/assets/...` y `/data/...`) sin cambios visuales.
 
 ## El temario
 
@@ -69,16 +77,16 @@ del Playground, nombres de las bases de ejemplo e incluso los comentarios de los
 
 - El idioma inicial se toma de `navigator.language` y, a partir de ahí, del que elijas: se guarda en
   `localStorage`.
-- El español vive en los propios archivos de `data/lessons/`. El inglés se registra aparte, en
-  `data/i18n/en-*.js`, con `I18N.registerLessons('en', { … })`. Si falta una traducción, se muestra el
+- El español vive en los propios archivos de `public/data/lessons/`. El inglés se registra aparte, en
+  `public/data/i18n/en-*.js`, con `I18N.registerLessons('en', { … })`. Si falta una traducción, se muestra el
   español en su lugar en vez de romperse.
-- Las cadenas de interfaz están en un único diccionario dentro de `assets/js/i18n.js`, con `t('clave')` y
+- Las cadenas de interfaz están en un único diccionario dentro de `public/assets/js/i18n.js`, con `t('clave')` y
   parámetros del tipo `{n}`.
 
 Para **añadir un idioma nuevo** (por ejemplo portugués):
 
-1. Añade `'pt'` a `SUPPORTED` y un bloque `pt: { … }` al diccionario de `assets/js/i18n.js`.
-2. Crea `data/i18n/pt-*.js` con `I18N.registerLessons('pt', { … })` y enlázalos en `index.html`.
+1. Añade `'pt'` a `SUPPORTED` y un bloque `pt: { … }` al diccionario de `public/assets/js/i18n.js`.
+2. Crea `public/data/i18n/pt-*.js` con `I18N.registerLessons('pt', { … })` y enlázalos en `src/pages/index.astro`.
 3. Añade un botón `<button data-lang="pt">PT</button>` al `#langSwitch`.
 4. Ejecuta `npm test`: `tools/test-i18n.js` te dirá exactamente qué falta.
 
@@ -103,7 +111,7 @@ bases: se comparten entre idiomas para que las soluciones sean las mismas.
 
 ### Funciones de usuario registradas
 
-Definidas en `assets/js/engine.js` y disponibles en todas las bases:
+Definidas en `public/assets/js/engine.js` y disponibles en todas las bases:
 
 | Función | Ejemplo |
 |---|---|
@@ -130,7 +138,7 @@ Tres pasadas sin navegador:
 ## Sobre el scraping
 
 El contenido de las lecciones 1–18 y de los temas de subconsultas y operaciones de conjunto procede de
-SQLBolt, descargado con `tools/extract-sqlbolt.py`. En `data/raw/` está el material original sin tocar:
+SQLBolt, descargado con `tools/extract-sqlbolt.py`. En `public/data/raw/` está el material original sin tocar:
 
 - `html/` — las 23 páginas HTML tal como las sirve el sitio.
 - `sqlbolt-scraped.json` — título, cuerpo HTML y definición completa de los ejercicios (tareas, soluciones
@@ -148,7 +156,7 @@ y mantén la atribución que aparece en la página de inicio.
 
 ## Dependencias
 
-`sql.js` (SQLite en WebAssembly) y CodeMirror 5, ambas copiadas a `assets/vendor/` para que el sitio
+`sql.js` (SQLite en WebAssembly) y CodeMirror 5, ambas copiadas a `public/assets/vendor/` para que el sitio
 funcione sin conexión. Para actualizarlas:
 
 ```bash

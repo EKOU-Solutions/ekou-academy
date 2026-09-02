@@ -11,12 +11,12 @@ const sb = {
 sb.window = sb;
 vm.createContext(sb);
 
-['assets/js/i18n.js', 'data/datasets.js', 'assets/js/registry.js'].forEach(f =>
+['public/assets/js/i18n.js', 'public/data/datasets.js', 'public/assets/js/registry.js'].forEach(f =>
   vm.runInContext(read(f), sb, { filename: f }));
-fs.readdirSync(path.join(root, 'data/lessons')).sort().forEach(f =>
-  vm.runInContext(read('data/lessons/' + f), sb, { filename: f }));
-fs.readdirSync(path.join(root, 'data/i18n')).sort().forEach(f =>
-  vm.runInContext(read('data/i18n/' + f), sb, { filename: f }));
+fs.readdirSync(path.join(root, 'public/data/lessons')).sort().forEach(f =>
+  vm.runInContext(read('public/data/lessons/' + f), sb, { filename: f }));
+fs.readdirSync(path.join(root, 'public/data/i18n')).sort().forEach(f =>
+  vm.runInContext(read('public/data/i18n/' + f), sb, { filename: f }));
 
 const { I18N, CURSO } = sb;
 let problems = 0;
@@ -27,7 +27,7 @@ gaps.forEach(g => { console.log('✗ en/' + g); problems++; });
 
 /* 2. los dos catálogos de interfaz tienen exactamente las mismas claves */
 const dictEs = new Set(), dictEn = new Set();
-const src = read('assets/js/i18n.js');
+const src = read('public/assets/js/i18n.js');
 const esBlock = src.slice(src.indexOf('    es: {'), src.indexOf('    en: {'));
 const enBlock = src.slice(src.indexOf('    en: {'), src.indexOf('  /* traducciones del temario'));
 for (const m of esBlock.matchAll(/^\s+'([\w.]+)':/gm)) dictEs.add(m[1]);
@@ -39,7 +39,7 @@ for (const m of enBlock.matchAll(/^\s+'([\w.]+)':/gm)) dictEn.add(m[1]);
 const used = new Set();
 ['app.js', 'exercise.js', 'playground.js', 'ui.js', 'checker.js'].forEach(f => {
   // solo literales completos: t('clave') o t('clave', {…}) — no concatenaciones ni closest('.x')
-  for (const m of read('assets/js/' + f).matchAll(/(?<![A-Za-z0-9_.$])(?:I18N\.)?t\('([\w.]+)'\s*[,)]/g)) used.add(m[1]);
+  for (const m of read('public/assets/js/' + f).matchAll(/(?<![A-Za-z0-9_.$])(?:I18N\.)?t\('([\w.]+)'\s*[,)]/g)) used.add(m[1]);
 });
 // las claves compuestas en tiempo de ejecución se comprueban aparte
 CURSO.SECTIONS.forEach(s => { used.add('section.' + s.id + '.name'); used.add('section.' + s.id + '.hint'); });

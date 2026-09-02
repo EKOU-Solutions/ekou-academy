@@ -8,7 +8,7 @@ const root = path.join(__dirname, '..');
 const read = f => fs.readFileSync(path.join(root, f), 'utf8');
 
 (async () => {
-  const SQL = await initSqlJs({ locateFile: f => path.join(root, 'assets/vendor', f) });
+  const SQL = await initSqlJs({ locateFile: f => path.join(root, 'public/assets/vendor', f) });
 
   const sandbox = {
     console, initSqlJs: () => Promise.resolve(SQL),
@@ -20,16 +20,16 @@ const read = f => fs.readFileSync(path.join(root, f), 'utf8');
   sandbox.globalThis = sandbox;
   vm.createContext(sandbox);
 
-  for (const f of ['data/datasets.js', 'assets/js/i18n.js', 'assets/js/registry.js', 'assets/js/engine.js', 'assets/js/checker.js']) {
+  for (const f of ['public/data/datasets.js', 'public/assets/js/i18n.js', 'public/assets/js/registry.js', 'public/assets/js/engine.js', 'public/assets/js/checker.js']) {
     vm.runInContext(read(f), sandbox, { filename: f });
   }
   // el Engine necesita SQL ya resuelto
   await sandbox.Engine.ready();
 
-  const lessonFiles = fs.readdirSync(path.join(root, 'data/lessons')).sort();
-  for (const f of lessonFiles) vm.runInContext(read('data/lessons/' + f), sandbox, { filename: f });
-  const i18nFiles = fs.readdirSync(path.join(root, 'data/i18n')).sort();
-  for (const f of i18nFiles) vm.runInContext(read('data/i18n/' + f), sandbox, { filename: f });
+  const lessonFiles = fs.readdirSync(path.join(root, 'public/data/lessons')).sort();
+  for (const f of lessonFiles) vm.runInContext(read('public/data/lessons/' + f), sandbox, { filename: f });
+  const i18nFiles = fs.readdirSync(path.join(root, 'public/data/i18n')).sort();
+  for (const f of i18nFiles) vm.runInContext(read('public/data/i18n/' + f), sandbox, { filename: f });
 
   const { CURSO, Engine, Checker } = sandbox;
   let totalTasks = 0, failures = 0, lessonsWithEx = 0;
