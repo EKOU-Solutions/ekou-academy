@@ -5,7 +5,7 @@
 
   function ready() {
     if (!readyPromise) {
-      readyPromise = initSqlJs({ locateFile: f => 'assets/vendor/' + f })
+      readyPromise = initSqlJs({ locateFile: f => '/assets/vendor/' + f })
         .then(mod => { SQL = mod; return mod; });
     }
     return readyPromise;

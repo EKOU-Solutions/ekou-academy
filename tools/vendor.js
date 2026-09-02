@@ -1,7 +1,7 @@
-/* Copia las dependencias de node_modules a assets/vendor/ (sitio sin build). */
+/* Copia las dependencias de node_modules a public/assets/vendor/ (runtime estático). */
 const fs = require('fs'), path = require('path');
 const root = path.join(__dirname, '..');
-const out = path.join(root, 'assets/vendor');
+const out = path.join(root, 'public/assets/vendor');
 const files = [
   ['sql.js/dist/sql-wasm.js', 'sql-wasm.js'],
   ['sql.js/dist/sql-wasm.wasm', 'sql-wasm.wasm'],

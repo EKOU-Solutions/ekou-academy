@@ -20,9 +20,9 @@ const sandbox = {
 sandbox.window = sandbox;
 vm.createContext(sandbox);
 
-['assets/js/i18n.js', 'assets/js/registry.js', 'assets/js/quiz.js', 'assets/js/ui.js']
+['public/assets/js/i18n.js', 'public/assets/js/registry.js', 'public/assets/js/quiz.js', 'public/assets/js/ui.js']
   .forEach(f => vm.runInContext(read(f), sandbox, { filename: f }));
-['data/lessons/39-java-basics.js', 'data/lessons/40-java-basics-exam.js']
+['public/data/lessons/39-java-basics.js', 'public/data/lessons/40-java-basics-exam.js']
   .forEach(f => vm.runInContext(read(f), sandbox, { filename: f }));
 
 const { CURSO, Quiz, UI } = sandbox;
@@ -31,9 +31,9 @@ function assert(condition, message) {
   if (!condition) { console.log('✗ ' + message); failures++; }
 }
 
-const index = read('index.html');
-assert(index.includes('data/lessons/39-java-basics.js') && index.includes('data/lessons/40-java-basics-exam.js'), 'index.html carga las dos lecciones Java');
-assert(index.includes('data/i18n/en-10-java.js') && index.includes('assets/js/quiz.js'), 'index.html carga traducciones y lógica de quiz');
+const index = read('src/pages/index.astro');
+assert(index.includes('data/lessons/39-java-basics.js') && index.includes('data/lessons/40-java-basics-exam.js'), 'index.astro carga las dos lecciones Java');
+assert(index.includes('data/i18n/en-10-java.js') && index.includes('assets/js/quiz.js'), 'index.astro carga traducciones y lógica de quiz');
 
 const javaSection = CURSO.SECTIONS.find(section => section.id === 'java');
 const javaLessons = CURSO.bySection().find(group => group.section.id === 'java');
@@ -43,7 +43,7 @@ assert(javaSection && javaSection.name === 'Java', 'existe la sección Java');
 assert(javaLessons && javaLessons.items.map(item => item.slug).join(',') === 'java-basics,java-basics-exam', 'Java contiene la lección y el examen en orden');
 assert(lesson && exam && CURSO.next(lesson.slug) === exam && CURSO.prev(exam.slug) === lesson, 'la navegación conecta lección y examen');
 assert(lesson && lesson.title === 'Lección 1: Java Basics', 'Java Basics empieza como lección 1 de Java, no como lección 39 de SQL');
-assert(read('data/i18n/en-10-java.js').includes("title: 'Lesson 1: Java Basics'"), 'la traducción inglesa conserva la numeración propia de Java');
+assert(read('public/data/i18n/en-10-java.js').includes("title: 'Lesson 1: Java Basics'"), 'la traducción inglesa conserva la numeración propia de Java');
 assert(lesson.exercise.type === 'quiz' && lesson.exercise.tasks.length === 6, 'Java Basics tiene seis checkpoints interactivos');
 assert(exam.exercise.type === 'quiz' && exam.exercise.tasks.length === 8, 'el examen tiene ocho preguntas');
 ['.java', 'javac', 'bytecode', 'JAVA_HOME', 'PATH', 'java --version', 'javac --version', 'Hello.java', 'java Hello', 'Main-Class', 'Class Loader', 'verification', 'preparation', 'resolution', 'initialization', 'Method Area', 'Heap', 'Stack', 'PC Register', 'Interpreter', 'JIT', 'Garbage Collector'].forEach(term => {

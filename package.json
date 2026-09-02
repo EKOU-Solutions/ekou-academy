@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "description": "EKOU Academy — curso interactivo de SQL y Java (copia ampliada de SQLBolt) con playground SQLite en el navegador",
   "scripts": {
-    "start": "python3 -m http.server 4173",
+    "dev": "astro dev",
+    "start": "astro dev --port 4173",
+    "build": "astro build",
+    "preview": "astro preview",
     "test": "node tools/test-exercises.js && node tools/test-negative.js && node tools/test-java.js && node tools/test-home.js && node tools/test-i18n.js",
     "vendor": "node tools/vendor.js"
   },
@@ -13,6 +16,13 @@
   "dependencies": {
     "codemirror": "^5.65.16",
     "sql.js": "^1.13.0"
+  },
+  "devDependencies": {
+    "@astrojs/mdx": "latest",
+    "@astrojs/react": "latest",
+    "astro": "latest",
+    "react": "latest",
+    "react-dom": "latest"
   },
   "private": true
 }

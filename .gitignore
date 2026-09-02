@@ -11,6 +11,7 @@ out/
 .cache/
 .parcel-cache/
 .vite/
+.astro/
 .next/
 *.tsbuildinfo
 
